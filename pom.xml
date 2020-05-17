@@ -31,7 +31,7 @@
         <mainClass>org.apache.kafka.connect.cli.ConnectDistributedWrapper</mainClass>
         <jib-maven-plugin.version>2.2.0</jib-maven-plugin.version>
         <jib.from.image>openjdk:11-jre-slim</jib.from.image>
-        <jib.to.image>apache-kafka-connect</jib.to.image>
+        <jib.to.image>onecricketeer/apache-kafka-connect</jib.to.image>
     </properties>
 
     <dependencyManagement>

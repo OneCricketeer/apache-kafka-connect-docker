@@ -33,9 +33,11 @@ services:
 
   # Jib app
   connect-jib:
-    image: kafka-connect-docker
+    image: onecricketeer/apache-kafka-connect:2.5.0
     depends_on:
       - kafka
+    ports:
+      - '8083:8083'
     environment:
       CONNECT_REST_ADVERTISED_HOST_NAME: connect-jib
       CONNECT_BOOTSTRAP_SERVERS: kafka:29092
@@ -52,11 +54,9 @@ services:
       CONNECT_KEY_CONVERTER: org.apache.kafka.connect.converters.ByteArrayConverter
       CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.converters.ByteArrayConverter
 
-#      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/uber/,/etc/kafka-connect/plugins
+      CONNECT_PLUGIN_PATH: /app/lib
 
       # Logging
-#      CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
-#      CONNECT_LOG4J_LOGGERS: org.reflections=ERROR
       # Connect client overrides
       CONNECT_TASK_SHUTDOWN_GRACEFUL_TIMEOUT_MS: 30000
       CONNECT_OFFSET_FLUSH_INTERVAL_MS: 900000

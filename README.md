@@ -56,7 +56,7 @@ We need to create the topics where data will be produced into.
 
 ```bash
 docker-compose exec kafka \
-    bash -c "kafka-topics.sh --create --if-not-exists --bootstrap-server kafka:29092 --topic input --partitions=1 --replication-factor=1"
+    bash -c "kafka-topics.sh --create --bootstrap-server kafka:29092 --topic input --partitions=1 --replication-factor=1"
 ```
 
 Verify topics exist
@@ -67,8 +67,6 @@ docker-compose exec kafka \
 ```
 
 ### Produce Lorem Ipsum into input topic
-
-> *Terminal 2*
 
 ```bash
 docker-compose exec kafka \
@@ -82,48 +80,104 @@ docker-compose exec kafka \
     bash -c "kafka-console-consumer.sh --topic input --bootstrap-server kafka:9092 --from-beginning --max-messages=9"
 ```
 
-### Start Console Consumer for output topic
-
-This command will seem to hang, but since there is no data yet, this is expected. 
-
-> *Terminal 2*
-
-```bash
-docker-compose exec kafka \
-    bash -c "kafka-console-consumer.sh --topic streams-plaintext-output --bootstrap-server kafka:9092 --from-beginning"
-```
-
 ### Start Kafka Connect
 
-Now, we can start our application to read from the beginning of the input topic that had data sent into it, and begin processing it. 
+Now, we can start Kafka Connect to read from the beginning of the input topic that had data sent into it, and begin processing it. 
+
+```bash
+./mvnw clean install
+
+docker-compose up connect-jib
+```
+
+Wait for log-line `Kafka Connect Started`, then post the FileSink Connector, which when not provided a `file`, will output the stdout of the container (Terminal 1).
 
 > *Terminal 3*
 
+Use Kafka Connect REST API to start this process
+
 ```bash
-docker-compose up kafka-connect-jib
+curl -XPUT http://localhost:8083/connectors/console-sink/config -H 'Content-Type: application/json' -d '{ 
+    "connector.class": "FileStreamSink",
+    "tasks.max": 1,
+    "topics": "input",
+    "transforms": "MakeMap",
+    "transforms.MakeMap.type": "org.apache.kafka.connect.transforms.HoistField$Value",
+    "transforms.MakeMap.field" : "line",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.storage.StringConverter"
+}'
 ```
 
-TODO ... POST FileSink Connector ... 
+In the output of _Terminal 2_, you should see something similar to the following.
 
-<!-- 
-*You should begin to see output in Terminal 2*
+```text
+connect-jib_1  | Struct{line=Morbi eu pharetra dolor. ....}
+connect-jib_1  | Struct{line=}
+connect-jib_1  | Struct{line=Nullam mauris sapien, vestibulum ....}
+```
 
-<kbd>Ctrl+C</kbd> on ***terminal 2*** after successful output and should see `Processed a total of 509 messages` if all words produced and consumed exactly once.  
--->
+This is the `toString()` representation of Kafka Connect's internal `Struct` class. Since we added a `HoistField$Value` transform, then there is a Structured Object with a field of `line` set to the value of the Kafka message that was read from the lines of the `lipsum.txt` file that was produced in the third step above. 
+
+To repeat that process, we delete the connector and reset the consumer group.
+
+```bash
+curl -XDELETE http://localhost:8083/connectors/console-sink
+
+docker-compose exec kafka \
+    bash -c "kafka-consumer-groups.sh --bootstrap-server kafka:9092 --group connect-console-sink --reset-offsets --all-topics --to-earliest --execute"
+
+# re-run above 'curl -XPUT ...' command 
+```
 
 ## Extra
 
 Redo the tutorial with more input data and partitions, then play with `docker-compose scale` to add more Kafka Connect tasks in parallel.
 
+### Extending with new Connectors
+
+Connector plugins should preferably be placed into `/app/lib`, thus requiring an environment variable of `CONNECT_PLUGIN_PATH="/app/lib"`. 
+
 ## Maven Details 
 
 The `exec:java` goal can be used to run Kafka Connect outside of Docker.
 
-To rebuild the container, for example, run `mvn clean package`
+To rebuild the container, for example, run `./mvnw clean package`
 
 ### Disclaimer
 
-Apache Kafka only comes with File Sink/Source and MirrorSource Connector (MirrorMaker 2.0).
+`confluent-hub` is **not** part of this Container; it **only includes** Connector classes provided by Apache Kafka. Apache Kafka only comes with File Sink/Source and MirrorSource Connector (MirrorMaker 2.0). Therefore, think of this image as a base upon which you can [add your own Connectors](#extending-with-new-connectors). 
+
+```bash
+$ curl localhost:8083/connector-plugins | jq
+[
+  {
+    "class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
+    "type": "sink",
+    "version": "2.5.0"
+  },
+  {
+    "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
+    "type": "source",
+    "version": "2.5.0"
+  },
+  {
+    "class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
+    "type": "source",
+    "version": "1"
+  },
+  {
+    "class": "org.apache.kafka.connect.mirror.MirrorHeartbeatConnector",
+    "type": "source",
+    "version": "1"
+  },
+  {
+    "class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
+    "type": "source",
+    "version": "1"
+  }
+]
+```
 
 The File Source/Sink are **not** to be used in production, and is only really meant as a "simple, standalone example," [according to the docs](https://kafka.apache.org/documentation/#connect_developing) (emphasis added).
 
@@ -149,4 +203,4 @@ docker network ls | grep $(basename `pwd`) | awk '{print $2}' | xargs docker net
 
 Learn [more about Jib](https://github.com/GoogleContainerTools/jib).
 
-Learn [more about Apache Kafka & Kafka Streams](http://kafka.apache.org/documentation).
+Learn [more about Apache Kafka & Kafka Connect](http://kafka.apache.org/documentation).
