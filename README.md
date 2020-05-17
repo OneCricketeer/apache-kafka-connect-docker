@@ -1,6 +1,18 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
-**tl;dr**: Use `./mvnw clean package` to build your container!
+![Docker Image Version (latest by date)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect?logo=docker&style=flat-square) ![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect?logo=docker&label=size&style=flat-square) ![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square)
+
+Using [GoogleContainerTools/Jib](https://github.com/GoogleContainerTools/jib) to package Apache Kafka Connect Distributed Server.
+
+Docker Pull! 🐳  
+
+```sh
+docker pull cricketeerone/apache-kafka-connect
+```
+
+See [`docker-compose.yml`](docker-compose.yml) for a fully-working example, or read below tutorial.
+
+**tl;dr**: Clone repo, and use `./mvnw clean package` to build your container!
 
 ## Tutorial
 
