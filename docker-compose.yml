@@ -1,0 +1,69 @@
+# Originated from https://github.com/bitnami/bitnami-docker-kafka/blob/0b1b18843b8a5c754a4c6e52a49ac5cf992fa5ed/docker-compose.yml
+version: '3'
+
+services:
+  zookeeper:
+    image: bitnami/zookeeper:3.5.7-debian-10-r23
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    volumes:
+      - 'zookeeper_data:/bitnami/zookeeper'
+  kafka:
+    image: bitnami/kafka:2.4.1-debian-10-r58
+    depends_on:
+      - zookeeper
+    restart: unless-stopped
+    ports:
+      - '9092:9092'
+      - '29092:29092'
+    volumes:
+      - 'kafka_data:/bitnami/kafka'
+      - $PWD/lipsum.txt:/data/lipsum.txt:ro  # Some data to produce
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_DELETE_TOPIC_ENABLE=true
+      - KAFKA_LOG_RETENTION_HOURS=48  # 2 days of retention for demo purposes
+      # https://rmoff.net/2018/08/02/kafka-listeners-explained/
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_LISTENERS=PLAINTEXT://:29092,PLAINTEXT_HOST://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+
+  # Jib app
+  connect-jib:
+    image: kafka-connect-docker
+    depends_on:
+      - kafka
+    environment:
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect-jib
+      CONNECT_BOOTSTRAP_SERVERS: kafka:29092
+
+      CONNECT_GROUP_ID: cg_connect-idea
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-jib_config
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-jib_offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-jib_status
+      # Cannot be higher than the number of brokers in the Kafka cluster
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.converters.ByteArrayConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.converters.ByteArrayConverter
+
+#      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/uber/,/etc/kafka-connect/plugins
+
+      # Logging
+#      CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
+#      CONNECT_LOG4J_LOGGERS: org.reflections=ERROR
+      # Connect client overrides
+      CONNECT_TASK_SHUTDOWN_GRACEFUL_TIMEOUT_MS: 30000
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 900000
+      CONNECT_CONSUMER_MAX_POLL_RECORDS: 500
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
