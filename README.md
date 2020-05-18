@@ -1,6 +1,9 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
-![Docker Image Version (latest by date)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect?logo=docker&style=flat-square) ![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect?logo=docker&label=size&style=flat-square) ![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square)
+<!-- Note: Version is listed in URL -->
+![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/2.5.0?logo=docker&style=flat-square) 
+![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/2.5.0?logo=docker&label=size&style=flat-square) 
+![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square) 
 
 Using [GoogleContainerTools/Jib](https://github.com/GoogleContainerTools/jib) to package Apache Kafka Connect Distributed Server.
 
@@ -10,15 +13,36 @@ Docker Pull! 🐳
 docker pull cricketeerone/apache-kafka-connect
 ```
 
-See [`docker-compose.yml`](docker-compose.yml) for a fully-working example, or read below tutorial.
+There is also an image that includes `confluent-hub`!
 
-**tl;dr**: Clone repo, and use `./mvnw clean package` to build your container!
+```sh
+docker pull cricketeerone/apache-kafka-connect:latest-confluent-hub
+```
+
+## Image Details
+
+Much like the `confluentinc/cp-kafka-connect` images, this container uses environment variables starting with `CONNECT_`, followed by the Kafka Connect Worker properties to be configured. 
+
+For example, these are the bare minimum variables necessary to get a Connect Distributed Server running 
+
+```txt
+CONNECT_BOOTSTRAP_SERVERS
+CONNECT_GROUP_ID
+CONNECT_KEY_CONVERTER
+CONNECT_VALUE_CONVERTER
+```
+
+See [`docker-compose.yml`](docker-compose.yml) for a full example of these variables' usage with the container while connected to a Kafka broker.
+
+## Build it
+
+Looking to build your own image? **tl;dr** - Clone repo, and use `./mvnw clean package` or `make` and you're done!
 
 ## Tutorial
 
 The following tutorial for using Jib to package `ConnectDistributed` for Kafka Connect will require installation of `docker-compose`, and uses the [Bitnami](https://github.com/bitnami/bitnami-docker-kafka) Kafka+Zookeeper images, however any other Kafka or ZooKeeper Docker images should work. 
 
-This tutorial will roughly follow the same steps as the [tutorial for Connect on Kafka's site](https://kafka.apache.org/documentation/#quickstart_kafkaconnect), except using the Distribtued Connect server instead. 
+This tutorial will roughly follow the same steps as the [tutorial for Connect on Kafka's site](https://kafka.apache.org/documentation/#quickstart_kafkaconnect), except using the Distributed Connect server instead. 
 
 ## Without Docker
 
@@ -148,17 +172,26 @@ Redo the tutorial with more input data and partitions, then play with `docker-co
 
 ### Extending with new Connectors
 
-Connector plugins should preferably be placed into `/app/lib`, thus requiring an environment variable of `CONNECT_PLUGIN_PATH="/app/lib"`. 
+Connector plugins should preferably be placed into `/app/libs`, thus requiring an environment variable of `CONNECT_PLUGIN_PATH="/app/libs"`. 
 
-## Maven Details 
+When using the `confluent-hub` versions, you can extend those images like so
 
-The `exec:java` goal can be used to run Kafka Connect outside of Docker.
+```Dockerfile
+FROM cricketeerone/apache-kafka-connect:latest-confluent-hub
 
-To rebuild the container, for example, run `./mvnw clean package`
+# Example connector installation
+RUN confluent-hub install --no-prompt \
+    --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
+    <connector-id>
+```
 
-### Disclaimer
+Where `<connector-id>` is copied from one of the available sources on [Confluent Hub](https://www.confluent.io/hub/). There is no guarantee in compatibility with the Kafka Connect base version and any version of a plugin that you install. 
 
-`confluent-hub` is **not** part of this Container; it **only includes** Connector classes provided by Apache Kafka. Apache Kafka only comes with File Sink/Source and MirrorSource Connector (MirrorMaker 2.0). Therefore, think of this image as a base upon which you can [add your own Connectors](#extending-with-new-connectors). 
+To re-iterate, `confluent-hub` is **not** part of the base image versions; they **only include** Connector classes provided by Apache Kafka. These are limited to File Sink/Source and MirrorSource Connector (MirrorMaker 2.0). In general, you'll probably want to add your own Connectors, as above, rather than use this image by itself. 
+
+#### Disclaimer
+
+It is best to think of this image as a base upon which you can [add your own Connectors](#extending-with-new-connectors). Here's the output of the default connector plugins, as provided by Apache Kafka project. 
 
 ```bash
 $ curl localhost:8083/connector-plugins | jq
@@ -197,9 +230,15 @@ The File Source/Sink are **not** to be used in production, and is only really me
 > 
 > ... 
 > 
-> [files] have trivially structured data -- each line is just a string. Almost **_all practical connectors_** will need schemas with more complex data formats
+> [files] have trivially structured data -- each line is just a string. Almost **_all practical connectors_** will need schemas with more complex data formats.
 
 That being said, the MirrorSource would be a more real-world example 
+
+## Maven Details 
+
+The `exec:java` goal can be used to run Kafka Connect outside of Docker.
+
+To rebuild the container, for example, run `./mvnw clean package` or `make`.
 
 ## Cleanup environment
 
