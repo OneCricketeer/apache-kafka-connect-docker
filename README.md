@@ -55,18 +55,18 @@ The following steps can be used to run this application locally outside of Docke
 ```bash
 export CONNECT_BOOTSTRAP_SERVERS=localhost:9092  # Assumes Kafka default port
 
-export CONNECT_GROUP_ID: cg_connect-idea
-export CONNECT_CONFIG_STORAGE_TOPIC: connect-jib_config
-export CONNECT_OFFSET_STORAGE_TOPIC: connect-jib_offsets
-export CONNECT_STATUS_STORAGE_TOPIC: connect-jib_status
+export CONNECT_GROUP_ID=cg_connect-idea
+export CONNECT_CONFIG_STORAGE_TOPIC=connect-jib_config
+export CONNECT_OFFSET_STORAGE_TOPIC=connect-jib_offsets
+export CONNECT_STATUS_STORAGE_TOPIC=connect-jib_status
 # Cannot be higher than the number of brokers in the export Kafka cluster
-export CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
-export CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
-export CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+export CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=1
+export CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1
+export CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1
 
 # We're going to use ByteArrayConverter by default, and let individual connectors configure themselves
-export CONNECT_KEY_CONVERTER: org.apache.kafka.connect.export converters.ByteArrayConverter
-export CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.converters.ByteArrayConverter
+export CONNECT_KEY_CONVERTER=org.apache.kafka.connect.export converters.ByteArrayConverter
+export CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.converters.ByteArrayConverter
 
 # Runs ConnectDistrbuted via Maven
 ./mvnw clean exec:java
