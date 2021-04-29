@@ -174,6 +174,8 @@ Redo the tutorial with more input data and partitions, then play with `docker-co
 
 ### Extending with new Connectors
 
+> ***Disclaimer***  It is best to think of this image as a base upon which you can add your own Connectors. Below is the output of the default connector plugins, as provided by Apache Kafka project.
+
 Connector plugins should preferably be placed into `/app/libs`, thus requiring an environment variable of `CONNECT_PLUGIN_PATH="/app/libs"`. 
 
 When using the `confluent-hub` versions, you can extend those images like so
@@ -191,9 +193,7 @@ Where `<connector-id>` is copied from one of the available sources on [Confluent
 
 To re-iterate, `confluent-hub` is **not** part of the base image versions; they **only include** Connector classes provided by Apache Kafka. These are limited to File Sink/Source and MirrorSource Connector (MirrorMaker 2.0). In general, you'll probably want to add your own Connectors, as above, rather than use this image by itself. 
 
-#### Disclaimer
-
-It is best to think of this image as a base upon which you can [add your own Connectors](#extending-with-new-connectors). Here's the output of the default connector plugins, as provided by Apache Kafka project. 
+#### Default Plugins
 
 ```bash
 $ curl localhost:8083/connector-plugins | jq
@@ -232,7 +232,7 @@ The File Source/Sink are **not** to be used in production, and is only really me
 > 
 > ... 
 > 
-> [files] have trivially structured data -- each line is just a string. Almost **_all practical connectors_** will need schemas with more complex data formats.
+> files have trivially structured data -- each line is just a string. Almost **_all practical connectors_** will need schemas with more complex data formats.
 
 That being said, the MirrorSource would be a more real-world example 
 
