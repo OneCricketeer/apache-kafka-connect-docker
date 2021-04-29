@@ -1,8 +1,8 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
 <!-- Note: Version is listed in URL -->
-![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/2.5.0?logo=docker&style=flat-square) 
-![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/2.5.0?logo=docker&label=size&style=flat-square) 
+![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/2.8.0?logo=docker&style=flat-square)
+![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/2.8.0?logo=docker&label=size&style=flat-square)
 ![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square) 
 
 [![GitHub](https://img.shields.io/github/license/OneCricketeer/apache-kafka-connect-docker?color=%23ce353d&logo=apache&style=flat-square)](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/master/LICENSE)
@@ -174,6 +174,8 @@ Redo the tutorial with more input data and partitions, then play with `docker-co
 
 ### Extending with new Connectors
 
+> ***Disclaimer***  It is best to think of this image as a base upon which you can add your own Connectors. Below is the output of the default connector plugins, as provided by Apache Kafka project.
+
 Connector plugins should preferably be placed into `/app/libs`, thus requiring an environment variable of `CONNECT_PLUGIN_PATH="/app/libs"`. 
 
 When using the `confluent-hub` versions, you can extend those images like so
@@ -191,9 +193,7 @@ Where `<connector-id>` is copied from one of the available sources on [Confluent
 
 To re-iterate, `confluent-hub` is **not** part of the base image versions; they **only include** Connector classes provided by Apache Kafka. These are limited to File Sink/Source and MirrorSource Connector (MirrorMaker 2.0). In general, you'll probably want to add your own Connectors, as above, rather than use this image by itself. 
 
-#### Disclaimer
-
-It is best to think of this image as a base upon which you can [add your own Connectors](#extending-with-new-connectors). Here's the output of the default connector plugins, as provided by Apache Kafka project. 
+#### Default Plugins
 
 ```bash
 $ curl localhost:8083/connector-plugins | jq
@@ -201,12 +201,12 @@ $ curl localhost:8083/connector-plugins | jq
   {
     "class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
     "type": "sink",
-    "version": "2.5.0"
+    "version": "2.8.0"
   },
   {
     "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
     "type": "source",
-    "version": "2.5.0"
+    "version": "2.8.0"
   },
   {
     "class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
@@ -232,7 +232,7 @@ The File Source/Sink are **not** to be used in production, and is only really me
 > 
 > ... 
 > 
-> [files] have trivially structured data -- each line is just a string. Almost **_all practical connectors_** will need schemas with more complex data formats.
+> files have trivially structured data -- each line is just a string. Almost **_all practical connectors_** will need schemas with more complex data formats.
 
 That being said, the MirrorSource would be a more real-world example 
 
