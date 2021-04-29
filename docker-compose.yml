@@ -3,7 +3,7 @@ version: '3'
 
 services:
   zookeeper:
-    image: bitnami/zookeeper:3.5.7-debian-10-r23
+    image: bitnami/zookeeper:3.6.2-debian-10-r186
     ports:
       - '2181:2181'
     environment:
@@ -11,7 +11,7 @@ services:
     volumes:
       - 'zookeeper_data:/bitnami/zookeeper'
   kafka:
-    image: bitnami/kafka:2.4.1-debian-10-r58
+    image: bitnami/kafka:2.8.0-debian-10-r7
     depends_on:
       - zookeeper
     restart: unless-stopped
@@ -23,17 +23,17 @@ services:
       - $PWD/lipsum.txt:/data/lipsum.txt:ro  # Some data to produce
     environment:
       - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_DELETE_TOPIC_ENABLE=true
-      - KAFKA_LOG_RETENTION_HOURS=48  # 2 days of retention for demo purposes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_DELETE_TOPIC_ENABLE=true
+      - KAFKA_CFG_LOG_RETENTION_HOURS=48  # 2 days of retention for demo purposes
       # https://rmoff.net/2018/08/02/kafka-listeners-explained/
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      - KAFKA_LISTENERS=PLAINTEXT://:29092,PLAINTEXT_HOST://:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:29092,PLAINTEXT_HOST://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
 
   # Jib app
   connect-jib:
-    image: cricketeerone/apache-kafka-connect:2.5.0
+    image: cricketeerone/apache-kafka-connect:2.8.0
     depends_on:
       - kafka
     ports:

@@ -1,8 +1,8 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
 <!-- Note: Version is listed in URL -->
-![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/2.5.0?logo=docker&style=flat-square) 
-![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/2.5.0?logo=docker&label=size&style=flat-square) 
+![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/2.8.0?logo=docker&style=flat-square)
+![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/2.8.0?logo=docker&label=size&style=flat-square)
 ![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square) 
 
 [![GitHub](https://img.shields.io/github/license/OneCricketeer/apache-kafka-connect-docker?color=%23ce353d&logo=apache&style=flat-square)](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/master/LICENSE)
@@ -201,12 +201,12 @@ $ curl localhost:8083/connector-plugins | jq
   {
     "class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
     "type": "sink",
-    "version": "2.5.0"
+    "version": "2.8.0"
   },
   {
     "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
     "type": "source",
-    "version": "2.5.0"
+    "version": "2.8.0"
   },
   {
     "class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
