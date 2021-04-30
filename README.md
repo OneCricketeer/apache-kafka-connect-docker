@@ -172,7 +172,7 @@ docker-compose exec kafka \
 
 Redo the tutorial with more input data and partitions, then play with `docker-compose scale` to add more Kafka Connect tasks in parallel.
 
-### Extending with new Connectors
+## Extending with new Connectors
 
 > ***Disclaimer***  It is best to think of this image as a base upon which you can add your own Connectors. Below is the output of the default connector plugins, as provided by Apache Kafka project.
 
