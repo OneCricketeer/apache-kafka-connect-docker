@@ -65,7 +65,7 @@ export CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1
 export CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1
 
 # We're going to use ByteArrayConverter by default, and let individual connectors configure themselves
-export CONNECT_KEY_CONVERTER=org.apache.kafka.connect.export converters.ByteArrayConverter
+export CONNECT_KEY_CONVERTER=org.apache.kafka.connect.converters.ByteArrayConverter
 export CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.converters.ByteArrayConverter
 
 # Runs ConnectDistrbuted via Maven
