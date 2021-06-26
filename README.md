@@ -193,6 +193,8 @@ Where `<connector-id>` is copied from one of the available sources on [Confluent
 
 To re-iterate, `confluent-hub` is **not** part of the base image versions; they **only include** Connector classes provided by Apache Kafka. These are limited to File Sink/Source and MirrorSource Connector (MirrorMaker 2.0). In general, you'll probably want to add your own Connectors, as above, rather than use this image by itself. 
 
+For a full example of adding plugins, and using the [Confluent Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html), please [refer to the `schema-registry` branch](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/schema-registry/Dockerfile.schema-registry). 
+
 #### Default Plugins
 
 ```bash
