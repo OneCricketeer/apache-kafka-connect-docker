@@ -57,7 +57,9 @@ services:
 
   # Jib app
   connect-jib-1:
-    image: *connect-image
+    build:
+      context: . 
+      dockerfile: Dockerfile.schema-registry
     hostname: connect-jib-1
     depends_on:
       - kafka
@@ -66,6 +68,19 @@ services:
     environment:
       <<: *connect-vars
       CONNECT_REST_ADVERTISED_HOST_NAME: connect-jib-1
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.2.3
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka:29092'
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
 
 volumes:
   zookeeper_data:

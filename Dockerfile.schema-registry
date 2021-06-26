@@ -1,0 +1,13 @@
+FROM cricketeerone/apache-kafka-connect:latest-confluent-hub
+
+ARG CONFLUENT_VERSION=7.2.3
+
+RUN confluent-hub install --no-prompt \
+    --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
+	confluentinc/kafka-connect-avro-converter:${CONFLUENT_VERSION} \
+ && confluent-hub install --no-prompt \
+    --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
+    confluentinc/kafka-connect-json-schema-converter:${CONFLUENT_VERSION} \
+ && confluent-hub install --no-prompt \
+    --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
+    confluentinc/kafka-connect-protobuf-converter:${CONFLUENT_VERSION}
