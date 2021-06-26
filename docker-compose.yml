@@ -33,7 +33,9 @@ services:
 
   # Jib app
   connect-jib:
-    image: cricketeerone/apache-kafka-connect:2.8.0
+    build:
+      context: . 
+      dockerfile: Dockerfile.schema-registry
     depends_on:
       - kafka
     ports:
@@ -54,7 +56,7 @@ services:
       CONNECT_KEY_CONVERTER: org.apache.kafka.connect.converters.ByteArrayConverter
       CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.converters.ByteArrayConverter
 
-      CONNECT_PLUGIN_PATH: /app/lib
+      CONNECT_PLUGIN_PATH: /app/libs
 
       # Logging
       # Connect client overrides
@@ -62,6 +64,19 @@ services:
       CONNECT_OFFSET_FLUSH_INTERVAL_MS: 900000
       CONNECT_CONSUMER_MAX_POLL_RECORDS: 500
 
+  schema-registry:
+    image: confluentinc/cp-schema-registry:6.2.0
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka:29092'
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+ 
 volumes:
   zookeeper_data:
     driver: local
