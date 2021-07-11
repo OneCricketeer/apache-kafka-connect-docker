@@ -1,0 +1,29 @@
+name: Publish package to the Maven Central Repository
+on:
+  push:
+    branches:
+      - master
+      - 'releases/**'
+    tags:
+      - v2.* # Targeting v2+
+    paths-ignore:
+      - '*.md'
+      - '*.yml'
+      - '*.txt'
+      - '.mvn/**'
+      - 'mvnw*'
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: LucaFeger/action-maven-cli@1.1.0
+      # mvnw clean package
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: docker
+        env:
+          DOCKER_USER: ''
+          DOCKER_PASSWORD: ''
+
