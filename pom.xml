@@ -14,29 +14,37 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
 
-        <kafka.version>2.8.0</kafka.version>
-        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/2.5/gradle/dependencies.gradle -->
-        <jetty.version>9.4.39.v20210325</jetty.version>
-        <jersey.version>2.31</jersey.version>
+        <kafka.version>${project.version}</kafka.version>
+        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/2.8/gradle/dependencies.gradle -->
+        <jetty.version>9.4.43.v20210629</jetty.version>
+        <jersey.version>2.34</jersey.version>
         <jackson.version>2.10.5</jackson.version>
         <jackson.databind.version>2.10.5.1</jackson.databind.version>
         <slf4j.version>1.7.30</slf4j.version>
         <!-- Extras -->
-        <log4j2.version>2.13.3</log4j2.version> <!-- Replace log4j 1.x -->
+        <log4j2.version>2.16.0</log4j2.version> <!-- Replace log4j 1.x -->
 
         <!-- Tests -->
-        <junit.version>5.7.0</junit.version>
-        <assertj.version>3.16.1</assertj.version>
+        <junit.version>5.8.2</junit.version>
+        <assertj.version>3.21.0</assertj.version>
 
         <!-- Packaging -->
         <mainClass>org.apache.kafka.connect.cli.ConnectDistributedWrapper</mainClass>
-        <jib-maven-plugin.version>3.0.0</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.1.4</jib-maven-plugin.version>
         <jib.from.image>adoptopenjdk:11-jre</jib.from.image>
         <jib.to.image>cricketeerone/apache-kafka-connect</jib.to.image>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Jackson -->
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
@@ -144,16 +152,6 @@
                 <version>${kafka.version}</version>
             </dependency>
             <!-- Tests -->
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-api</artifactId>
-                <version>${junit.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-params</artifactId>
-                <version>${junit.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
@@ -315,7 +313,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M4</version>
+                    <version>3.0.0-M5</version>
                 </plugin>
             </plugins>
         </pluginManagement>
