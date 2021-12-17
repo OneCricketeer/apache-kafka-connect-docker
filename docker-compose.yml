@@ -11,7 +11,7 @@ services:
     volumes:
       - 'zookeeper_data:/bitnami/zookeeper'
   kafka:
-    image: bitnami/kafka:2.8.0-debian-10-r7
+    image: bitnami/kafka:2.8.1-debian-10-r74
     depends_on:
       - zookeeper
     restart: unless-stopped
@@ -28,12 +28,12 @@ services:
       - KAFKA_CFG_LOG_RETENTION_HOURS=48  # 2 days of retention for demo purposes
       # https://rmoff.net/2018/08/02/kafka-listeners-explained/
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:29092,PLAINTEXT_HOST://:9092
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:29092,PLAINTEXT_HOST://0.0.0.0:9092
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
 
   # Jib app
   connect-jib:
-    image: cricketeerone/apache-kafka-connect:2.8.0
+    image: cricketeerone/apache-kafka-connect:2.8.1
     depends_on:
       - kafka
     ports:
