@@ -3,7 +3,7 @@ version: '3'
 
 services:
   zookeeper:
-    image: bitnami/zookeeper:3.6.2-debian-10-r186
+    image: bitnami/zookeeper:3.6.3-debian-10-r190
     ports:
       - '2181:2181'
     environment:
@@ -11,7 +11,7 @@ services:
     volumes:
       - 'zookeeper_data:/bitnami/zookeeper'
   kafka:
-    image: bitnami/kafka:2.8.1-debian-10-r74
+    image: bitnami/kafka:3.0.0-debian-10-r61
     depends_on:
       - zookeeper
     restart: unless-stopped
@@ -33,7 +33,7 @@ services:
 
   # Jib app
   connect-jib:
-    image: cricketeerone/apache-kafka-connect:2.8.1
+    image: cricketeerone/apache-kafka-connect:3.0.0
     depends_on:
       - kafka
     ports:

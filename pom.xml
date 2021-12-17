@@ -5,7 +5,7 @@
 
     <groupId>cricket.jmoore</groupId>
     <artifactId>kafka-connect-docker</artifactId>
-    <version>2.8.1</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -15,11 +15,11 @@
         <maven.compiler.target>11</maven.compiler.target>
 
         <kafka.version>${project.version}</kafka.version>
-        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/2.8.1/gradle/dependencies.gradle -->
+        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/3.0/gradle/dependencies.gradle -->
         <jetty.version>9.4.43.v20210629</jetty.version>
         <jersey.version>2.34</jersey.version>
-        <jackson.version>2.10.5</jackson.version>
-        <jackson.databind.version>2.10.5.1</jackson.databind.version>
+        <jackson.version>2.12.3</jackson.version>
+        <jackson.databind.version>2.12.3</jackson.databind.version>
         <slf4j.version>1.7.30</slf4j.version>
         <!-- Extras -->
         <log4j2.version>2.16.0</log4j2.version> <!-- Replace log4j 1.x -->
