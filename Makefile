@@ -11,7 +11,7 @@ build-confluent-hub: build
 build:
 	@./mvnw -B --errors clean package --file pom.xml
 
-push: build
+push: build-confluent-hub
 	@docker push $(DOCKER_FQN):latest
 	@docker push $(DOCKER_FQN):latest-confluent-hub
 	@docker push $(DOCKER_FQN):$(VERSION)
