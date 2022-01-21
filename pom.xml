@@ -31,7 +31,7 @@
         <!-- Packaging -->
         <mainClass>org.apache.kafka.connect.cli.ConnectDistributedWrapper</mainClass>
         <jib-maven-plugin.version>3.1.4</jib-maven-plugin.version>
-        <jib.from.image>adoptopenjdk:11-jre</jib.from.image>
+        <jib.from.image>eclipse-temurin:11-jre</jib.from.image>
         <jib.to.image>cricketeerone/apache-kafka-connect</jib.to.image>
     </properties>
 
