@@ -5,7 +5,7 @@
 
     <groupId>cricket.jmoore</groupId>
     <artifactId>kafka-connect-docker</artifactId>
-    <version>3.0.0</version>
+    <version>3.2.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -16,13 +16,13 @@
 
         <kafka.version>${project.version}</kafka.version>
         <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/3.0/gradle/dependencies.gradle -->
-        <jetty.version>9.4.43.v20210629</jetty.version>
+        <jetty.version>9.4.44.v20210927</jetty.version>
         <jersey.version>2.34</jersey.version>
-        <jackson.version>2.12.3</jackson.version>
-        <jackson.databind.version>2.12.3</jackson.databind.version>
-        <slf4j.version>1.7.30</slf4j.version>
+        <jackson.version>2.12.6</jackson.version>
+        <jackson.databind.version>2.12.6.1</jackson.databind.version>
+        <slf4j.version>1.7.36</slf4j.version>
         <!-- Extras -->
-        <log4j2.version>2.17.1</log4j2.version> <!-- Replace log4j 1.x -->
+        <log4j2.version>2.17.2</log4j2.version> <!-- Replace log4j 1.x -->
 
         <!-- Tests -->
         <junit.version>5.8.2</junit.version>
@@ -30,7 +30,7 @@
 
         <!-- Packaging -->
         <mainClass>org.apache.kafka.connect.cli.ConnectDistributedWrapper</mainClass>
-        <jib-maven-plugin.version>3.1.4</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.2.1</jib-maven-plugin.version>
         <jib.from.image>eclipse-temurin:11-jre</jib.from.image>
         <jib.to.image>cricketeerone/apache-kafka-connect</jib.to.image>
     </properties>

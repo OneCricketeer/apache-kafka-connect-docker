@@ -85,7 +85,7 @@ public class ConnectDistributedWrapper implements Runnable {
                         final String k = e.getKey();
                         final String v = e.getValue();
                         log.debug("{}={}", k, v);
-                        pw.printf("%s=%s\n", k, v);
+                        pw.printf("%s=%s%n", k, v);
                     });
             pw.flush();
             log.trace("Connect worker properties written");
