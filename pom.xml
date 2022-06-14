@@ -102,7 +102,6 @@
                 <version>${log4j2.version}</version>
             </dependency>
 
-            <!-- Setup kafka-clients to exclude log4j 1.x -->
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
@@ -183,14 +182,14 @@
             <artifactId>log4j-slf4j-impl</artifactId>
         </dependency>
 
-        <!-- Setup kafka-clients to exclude log4j 1.x -->
+        <!-- Setup kafka-clients to exclude reload4j (log4j 1.x compatible logging) -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
+                    <groupId>ch.qos.reload4j</groupId>
+                    <artifactId>reload4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -289,7 +288,6 @@
                                 <jvmFlag>-XX:MaxInlineLevel=15</jvmFlag>
                                 <jvmFlag>-Djava.awt.headless=true</jvmFlag>
                             </jvmFlags>
-                            <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                         </container>
                     </configuration>
                     <executions>
