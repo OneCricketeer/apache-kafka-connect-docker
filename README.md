@@ -21,6 +21,18 @@ There is also an image that includes `confluent-hub`!
 docker pull cricketeerone/apache-kafka-connect:latest-confluent-hub
 ```
 
+**Table of Contents**
+- [Image Details](#image-details)
+- [Build it locally](#build-it-locally)
+- [Tutorial](#tutorial)
+    - [Without Docker](#without-docker)
+    - [Starting Kafka in Docker](#start-kafka-cluster-in-docker)
+- Extra
+  - [Scaling Up](#scaling-up)
+  - [Scaling Out](#scaling-out)
+- [Extending with new Connectors](#extending-with-new-connectors)
+- [HTTP Authentication](#http-authentication)
+
 ## Image Details
 
 Much like the `confluentinc/cp-kafka-connect` images, this container uses environment variables starting with `CONNECT_`, followed by the Kafka Connect Worker properties to be configured. 
@@ -40,7 +52,7 @@ CONNECT_STATUS_STORAGE_TOPIC
 
 See [`docker-compose.yml`](docker-compose.yml) for a full example of these variables' usage with the container while connected to a Kafka broker.
 
-## Build it
+## Build it locally
 
 Looking to build your own image? **tl;dr** - Clone repo, and use `./mvnw clean package` or `make` and you're done!
 
@@ -50,7 +62,7 @@ The following tutorial for using Jib to package `ConnectDistributed` for Kafka C
 
 This tutorial will roughly follow the same steps as the [tutorial for Connect on Kafka's site](https://kafka.apache.org/documentation/#quickstart_kafkaconnect), except using the Distributed Connect server instead. 
 
-## Without Docker
+### Without Docker
 
 If not using Docker, Kafka and ZooKeeper can be started locally using their respective start scripts. If this is done, though, the the variables for the bootstrap servers will need to be adjusted accordingly.  
 
@@ -167,14 +179,24 @@ To repeat that process, we delete the connector and reset the consumer group.
 curl -XDELETE http://localhost:8083/connectors/console-sink
 
 docker-compose exec kafka \
-    bash -c "kafka-consumer-groups.sh --bootstrap-server kafka:9092 --group connect-console-sink --reset-offsets --all-topics --to-earliest --execute"
-
-# re-run above 'curl -XPUT ...' command 
+    bash -c "kafka-consumer-groups.sh --bootstrap-server kafka:9092 --group connect-console-sink --reset-offsets --all-topics --to-earliest --execute" 
 ```
+
+Re-run above console-producer and `curl -XPUT ...` command, but this time, there will be more than 9 total messages printed. 
 
 ## Extra
 
-Redo the tutorial with more input data and partitions, then play with `docker-compose scale` to add more Kafka Connect tasks in parallel.
+### Scaling up
+
+Redo the tutorial with more input data and partitions and increase `max.tasks` of the connector. 
+
+### Scaling out
+
+Scaling the workers will require more variables related to the `listeners` properties. Ex. sending a request to one of the worker in the group that is not the leader will return this. (TODO: Document the fix.)
+
+```shell
+{"error_code":500,"message":"Error trying to forward REST request: Error trying to forward REST request: Cannot complete request because of a conflicting operation (e.g. worker rebalance)"}%
+```
 
 ## Extending with new Connectors
 

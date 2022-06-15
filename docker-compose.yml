@@ -3,7 +3,7 @@ version: '3'
 
 services:
   zookeeper:
-    image: bitnami/zookeeper:3.6.3-debian-10-r190
+    image: bitnami/zookeeper:3.8-debian-11
     ports:
       - '2181:2181'
     environment:
@@ -11,7 +11,7 @@ services:
     volumes:
       - 'zookeeper_data:/bitnami/zookeeper'
   kafka:
-    image: bitnami/kafka:3.0.0-debian-10-r61
+    image: bitnami/kafka:3.2.0
     depends_on:
       - zookeeper
     restart: unless-stopped
