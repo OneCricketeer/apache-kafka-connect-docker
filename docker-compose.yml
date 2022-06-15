@@ -33,7 +33,7 @@ services:
 
   # Jib app
   connect-jib:
-    image: cricketeerone/apache-kafka-connect:3.0.0
+    image: cricketeerone/apache-kafka-connect:3.2.0
     depends_on:
       - kafka
     ports:

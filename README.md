@@ -1,8 +1,8 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
 <!-- Note: Version is listed in URL -->
-![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.0.0?logo=docker&style=flat-square)
-![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.0.0?logo=docker&label=size&style=flat-square)
+![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.2.0?logo=docker&style=flat-square)
+![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.2.0?logo=docker&label=size&style=flat-square)
 ![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square) 
 
 [![GitHub](https://img.shields.io/github/license/OneCricketeer/apache-kafka-connect-docker?color=%23ce353d&logo=apache&style=flat-square)](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/master/LICENSE)
@@ -25,13 +25,17 @@ docker pull cricketeerone/apache-kafka-connect:latest-confluent-hub
 
 Much like the `confluentinc/cp-kafka-connect` images, this container uses environment variables starting with `CONNECT_`, followed by the Kafka Connect Worker properties to be configured. 
 
-For example, these are the bare minimum variables necessary to get a Connect Distributed Server running 
+For example, these are the bare minimum variables necessary to get a Connect Distributed Server running, 
+but assumes it is connected to Kafka cluster with at least 3 brokers (replication factor for the three topics)
 
 ```txt
 CONNECT_BOOTSTRAP_SERVERS
 CONNECT_GROUP_ID
 CONNECT_KEY_CONVERTER
 CONNECT_VALUE_CONVERTER
+CONNECT_CONFIG_STORAGE_TOPIC
+CONNECT_OFFSET_STORAGE_TOPIC
+CONNECT_STATUS_STORAGE_TOPIC
 ```
 
 See [`docker-compose.yml`](docker-compose.yml) for a full example of these variables' usage with the container while connected to a Kafka broker.
@@ -200,31 +204,31 @@ For a full example of adding plugins, and using the [Confluent Schema Registry](
 ```bash
 $ curl localhost:8083/connector-plugins | jq
 [
-  {
-    "class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
-    "type": "sink",
-    "version": "3.0.0"
-  },
-  {
-    "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
-    "type": "source",
-    "version": "3.0.0"
-  },
-  {
-    "class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
-    "type": "source",
-    "version": "1"
-  },
-  {
-    "class": "org.apache.kafka.connect.mirror.MirrorHeartbeatConnector",
-    "type": "source",
-    "version": "1"
-  },
-  {
-    "class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
-    "type": "source",
-    "version": "1"
-  }
+    {
+        "class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
+        "type": "sink",
+        "version": "3.2.0"
+    },
+    {
+        "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
+        "type": "source",
+        "version": "3.2.0"
+    },
+    {
+        "class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
+        "type": "source",
+        "version": "3.2.0"
+    },
+    {
+        "class": "org.apache.kafka.connect.mirror.MirrorHeartbeatConnector",
+        "type": "source",
+        "version": "3.2.0"
+    },
+    {
+        "class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
+        "type": "source",
+        "version": "3.2.0"
+    }
 ]
 ```
 
@@ -237,6 +241,45 @@ The File Source/Sink are **not** to be used in production, and is only really me
 > files have trivially structured data -- each line is just a string. Almost **_all practical connectors_** will need schemas with more complex data formats.
 
 That being said, the MirrorSource would be a more real-world example 
+
+## HTTP Authentication
+
+[Confluent documentation covers this for Basic Auth](https://docs.confluent.io/platform/current/security/basic-auth.html#kconnect-rest-api). 
+
+Create files
+
+```shell
+$ cat /tmp/connect-jaas.conf
+KafkaConnect {
+    org.apache.kafka.connect.rest.basic.auth.extension.PropertyFileLoginModule required
+    file="/tmp/connect.password";
+};
+$ cat /tmp/connect.password  # add as many lines as needed
+admin: OneCricketeer
+```
+
+Add environment variables and mounts (`JAVA_TOOL_OPTIONS` comes from Eclipse Temurin base image)
+
+```yaml
+    environment:
+      ...
+      # Auth
+      CONNECT_REST_EXTENSION_CLASSES: org.apache.kafka.connect.rest.basic.auth.extension.BasicAuthSecurityRestExtension
+      JAVA_TOOL_OPTIONS: "-Djava.security.auth.login.config=/app/connect-jaas.conf"
+    volumes:
+      # Auth
+      - /tmp/connect-jaas.conf:/app/connect-jaas.conf:ro
+      - /tmp/connect.password:/tmp/connect.password:ro
+```
+
+`docker-compose up` and test it 
+
+```shell
+$ curl -w'\n' http://localhost:8083
+User cannot access the resource.
+$ curl -w'\n' -uadmin:OneCricketeer http://localhost:8083
+{"version":"3.2.0","commit":"38103ffaa962ef50","kafka_cluster_id":"owdVwgFRTVm672ZpBP_cZw"}
+```
 
 ## Maven Details 
 

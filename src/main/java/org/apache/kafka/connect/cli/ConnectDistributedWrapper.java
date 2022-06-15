@@ -10,7 +10,6 @@ import java.io.PrintWriter;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Wrapper class for starting <code>connect-distributed</code> using <code>'CONNECT_'</code> properties from
@@ -52,11 +51,12 @@ public class ConnectDistributedWrapper implements Runnable {
         if (k == null || k.isEmpty()) {
             throw new IllegalArgumentException("Input cannot be null or empty");
         }
-        if (k.length() < CONNECT_ENV_PREFIX.length() || k.equals(CONNECT_ENV_PREFIX)) {
-            throw new IllegalArgumentException("Input does not start with '" + CONNECT_ENV_PREFIX +
-                    "' or does not define a property");
+        final int prefixLength = CONNECT_ENV_PREFIX.length();
+        if (k.length() < prefixLength || k.equals(CONNECT_ENV_PREFIX)) {
+            throw new IllegalArgumentException(String.format(
+                "Input does not start with '%s' or does not define a property", CONNECT_ENV_PREFIX));
         }
-        return k.toLowerCase().substring(CONNECT_ENV_PREFIX.length()).replace('_', '.');
+        return k.toLowerCase().substring(prefixLength).replace('_', '.');
     }
 
     /**
@@ -68,7 +68,7 @@ public class ConnectDistributedWrapper implements Runnable {
      * @throws IOException If the property file cannot be created.
      */
     static File createConnectProperties(Map<String, String> env) throws IOException {
-        if (env == null) {
+        if (env == null || env.isEmpty()) {
             throw new IllegalArgumentException("Provided argument cannot be null or empty");
         }
         final File workerPropFile = File.createTempFile("tmp-connect-distributed", ".properties");
@@ -78,8 +78,6 @@ public class ConnectDistributedWrapper implements Runnable {
             env.entrySet()
                     .stream()
                     .filter(CONNECT_ENV_FILTER)
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                    .entrySet().stream()
                     .map(e -> new AbstractMap.SimpleEntry<>(connectEnvVarToProp(e.getKey()), e.getValue()))
                     .forEach(e -> {
                         final String k = e.getKey();
