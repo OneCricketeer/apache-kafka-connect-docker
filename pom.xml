@@ -22,7 +22,7 @@
         <jackson.databind.version>2.12.6.1</jackson.databind.version>
         <slf4j.version>1.7.36</slf4j.version>
         <!-- Extras -->
-        <log4j2.version>2.17.2</log4j2.version> <!-- Replace log4j 1.x -->
+        <log4j2.version>2.17.2</log4j2.version> <!-- Replace reload4j -->
 
         <!-- Tests -->
         <junit.version>5.8.2</junit.version>
@@ -102,7 +102,6 @@
                 <version>${log4j2.version}</version>
             </dependency>
 
-            <!-- Setup kafka-clients to exclude log4j 1.x -->
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
@@ -183,16 +182,9 @@
             <artifactId>log4j-slf4j-impl</artifactId>
         </dependency>
 
-        <!-- Setup kafka-clients to exclude log4j 1.x -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Kafka Connect API -->
@@ -207,6 +199,10 @@
                 <exclusion>
                     <groupId>org.apache.kafka</groupId>
                     <artifactId>kafka-tools</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.reload4j</groupId>
+                    <artifactId>reload4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
