@@ -2,7 +2,8 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%d{YYYY-MM-dd HH:mm:ss.SSS}] %-5level [%thread] %logger{36} - %msg%n"/>
+            <!-- https://github.com/apache/kafka/blob/trunk/config/connect-log4j.properties#L36 -->
+            <PatternLayout pattern="[%d{DEFAULT}] %p %X{connector.context}%m (%c:%L)%n"/>
         </Console>
     </Appenders>
     <Loggers>
