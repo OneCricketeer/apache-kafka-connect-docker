@@ -62,10 +62,19 @@ services:
     depends_on:
       - kafka
     ports:
-      - '8083:8083'
+      - '8083:8083'  # full cluster info accessible from one instance
     environment:
       <<: *connect-vars
       CONNECT_REST_ADVERTISED_HOST_NAME: connect-jib-1
+
+  connect-jib-2:
+    image:  *connect-image
+    hostname: connect-jib-2
+    depends_on:
+      - kafka
+    environment:
+      <<: *connect-vars
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect-jib-2
 
 volumes:
   zookeeper_data:
