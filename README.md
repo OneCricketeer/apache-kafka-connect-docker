@@ -25,8 +25,8 @@ docker pull cricketeerone/apache-kafka-connect:latest-confluent-hub
 - [Image Details](#image-details)
 - [Build it locally](#build-it-locally)
 - [Tutorial](#tutorial)
-    - [Without Docker](#without-docker)
-    - [Starting Kafka in Docker](#start-kafka-cluster-in-docker)
+  - [Without Docker](#without-docker)
+  - [Starting Kafka in Docker](#start-kafka-cluster-in-docker)
 - Extra
   - [Scaling Up](#scaling-up)
   - [Scaling Out](#scaling-out)
@@ -155,9 +155,11 @@ curl -XPUT http://localhost:8083/connectors/console-sink/config -H 'Content-Type
     "connector.class": "FileStreamSink",
     "tasks.max": 1,
     "topics": "input",
-    "transforms": "MakeMap",
+    "transforms": "MakeMap,AddPartition",
     "transforms.MakeMap.type": "org.apache.kafka.connect.transforms.HoistField$Value",
     "transforms.MakeMap.field" : "line",
+    "transforms.AddPartition.type": "org.apache.kafka.connect.transforms.InsertField$Value",
+    "transforms.AddPartition.partition.field" : "partition!",
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
     "value.converter": "org.apache.kafka.connect.storage.StringConverter"
 }'
@@ -166,12 +168,12 @@ curl -XPUT http://localhost:8083/connectors/console-sink/config -H 'Content-Type
 In the output of _Terminal 2_, you should see something similar to the following.
 
 ```text
-connect-jib_1  | Struct{line=Morbi eu pharetra dolor. ....}
-connect-jib_1  | Struct{line=}
-connect-jib_1  | Struct{line=Nullam mauris sapien, vestibulum ....}
+connect-jib_1  | Struct{line=Morbi eu pharetra dolor. ....,partition=1}
+connect-jib_1  | Struct{line=,partition=1}
+connect-jib_1  | Struct{line=Nullam mauris sapien, vestibulum ....,partition=1}
 ```
 
-This is the `toString()` representation of Kafka Connect's internal `Struct` class. Since we added a `HoistField$Value` transform, then there is a Structured Object with a field of `line` set to the value of the Kafka message that was read from the lines of the `lipsum.txt` file that was produced in the third step above. 
+This is the `toString()` representation of Kafka Connect's internal `Struct` class. Since we added a `HoistField$Value` transform, then there is a Structured Object with a field of `line` set to the value of the Kafka message that was read from the lines of the `lipsum.txt` file that was produced in the third step above, as well as a `partition` field set to the consumed record partition. The topic was only created with one partition.
 
 To repeat that process, we delete the connector and reset the consumer group.
 
@@ -188,15 +190,26 @@ Re-run above console-producer and `curl -XPUT ...` command, but this time, there
 
 ### Scaling up
 
-Redo the tutorial with more input data and partitions and increase `max.tasks` of the connector. 
+Redo the tutorial with more input data and partitions and increase `max.tasks` of the connector. Notice that the `partition` field in the output may change (you may need to produce data multiple times to randomize the record batches).
 
 ### Scaling out
 
-Scaling the workers will require more variables related to the `listeners` properties. Ex. sending a request to one of the worker in the group that is not the leader will return this. (TODO: Document the fix.)
+Scaling the workers will require adding another container with a unique `CONNECT_ADVERTISED_HOST_NAME` variable. I.e.
 
-```shell
-{"error_code":500,"message":"Error trying to forward REST request: Error trying to forward REST request: Cannot complete request because of a conflicting operation (e.g. worker rebalance)"}%
+```yml
+connect-jib-2:
+image:  *connect-image
+hostname: connect-jib-2
+depends_on:
+    - kafka
+ports:
+    - '8183:8083'
+environment:
+    <<: *connect-vars
+    CONNECT_REST_ADVERTISED_HOST_NAME: connect-jib-2
 ```
+
+See [`docker-compose.cluster.yml`](./docker-compose.cluster.yml). It can be ran via `docker compose -f docker-compose.cluster.yml up`.
 
 ## Extending with new Connectors
 
