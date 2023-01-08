@@ -8,13 +8,15 @@ DOCKERFILE_CONFLUENT_HUB = Dockerfile.$(DOCKER_TAG_CONFLUENT_HUB)
 
 BUILDX_PLATFORMS ?= linux/arm64
 
+MVN_BUILD_CMD ?= compile jib:build
+
 DOCKER_FQN = $(DOCKER_REGISTRY)$(DOCKER_USER)/$(DOCKER_IMAGE)
 
 build-confluent-hub: build
 	@docker build -f $(DOCKERFILE_CONFLUENT_HUB) -t $(DOCKER_FQN):$(VERSION)-$(DOCKER_TAG_CONFLUENT_HUB) .
 	@docker tag $(DOCKER_FQN):$(VERSION)-$(DOCKER_TAG_CONFLUENT_HUB) $(DOCKER_FQN):latest-$(DOCKER_TAG_CONFLUENT_HUB)
 build:
-	@./mvnw -B --errors clean package --file pom.xml
+	@./mvnw -B --errors clean $(MVN_BUILD_CMD) --file pom.xml
 
 # Targets to support arm64
 jib-build:  # requires docker login
