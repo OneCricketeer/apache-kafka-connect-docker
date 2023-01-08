@@ -1,7 +1,7 @@
 # Originated from https://github.com/bitnami/bitnami-docker-kafka/blob/0b1b18843b8a5c754a4c6e52a49ac5cf992fa5ed/docker-compose.yml
 version: '3'
 
-x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.2.0
+x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.2.3
 
 x-connect: &connect-vars
   CONNECT_BOOTSTRAP_SERVERS: kafka:29092
@@ -35,7 +35,7 @@ services:
     volumes:
       - 'zookeeper_data:/bitnami/zookeeper'
   kafka:
-    image: bitnami/kafka:3.2.0
+    image: bitnami/kafka:3.2.3
     depends_on:
       - zookeeper
     restart: unless-stopped
