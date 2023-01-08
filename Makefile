@@ -1,7 +1,7 @@
 DOCKER_REGISTRY ?= ''
 DOCKER_USER ?= cricketeerone
 DOCKER_IMAGE ?= apache-kafka-connect
-VERSION = 3.2.0
+VERSION = 3.2.3
 
 DOCKER_FQN = $(DOCKER_REGISTRY)$(DOCKER_USER)/$(DOCKER_IMAGE)
 
