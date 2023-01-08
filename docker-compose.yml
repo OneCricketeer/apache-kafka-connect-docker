@@ -41,7 +41,6 @@ services:
     restart: unless-stopped
     ports:
       - '9092:9092'
-      - '29092:29092'
     volumes:
       - 'kafka_data:/bitnami/kafka'
       - $PWD/lipsum.txt:/data/lipsum.txt:ro  # Some data to produce
