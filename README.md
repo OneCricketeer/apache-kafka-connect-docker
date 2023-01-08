@@ -54,7 +54,27 @@ See [`docker-compose.yml`](docker-compose.yml) for a full example of these varia
 
 ## Build it locally
 
-Looking to build your own image? **tl;dr** - Clone repo, and use `./mvnw clean package` or `make` and you're done!
+Looking to build your own image? **tl;dr** - Clone repo, and use `./mvnw clean compile jib:dockerBuild` or `MVN_BUILD_CMD='compile jib:dockerBuild' make` and you're done!
+
+**Multi-platform builds (buildx)**
+
+By default, with the above commands, an image should build for your local OS architecture (although, this has not been tested on `arm64` devices).  
+The following builds and pushes multi-platform images to Docker Hub via Docker Buildx.
+
+```sh
+BUILDX_PLATFORMS=linux/arm64,linux/amd64 make
+```
+
+## Push to a private registry
+
+To push to a private Docker Registry, you'll need to `docker login` to that address. The following commands will push the `apache-kafka-docker` image to a Docker Registry under your local username. Feel free to change `DOCKER_USER` to a custom repo name in the Registry.
+
+```sh
+$ docker login <registry-address> --username=$(whoami)
+
+$ DOCKER_REGISTRY=<registry-address> DOCKER_USER=$(whoami) \
+  make
+```
 
 ## Tutorial
 
