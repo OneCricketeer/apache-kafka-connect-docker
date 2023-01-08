@@ -265,16 +265,6 @@
                     <configuration>
                         <from>
                             <image>${jib.from.image}</image>
-                            <platforms>
-                                <platform>
-                                    <os>linux</os>
-                                    <architecture>amd64</architecture>
-                                </platform>
-                                <platform>
-                                    <os>linux</os>
-                                    <architecture>arm64</architecture>
-                                </platform>
-                            </platforms>
                         </from>
                         <to>
                             <image>${jib.to.image}</image>
@@ -342,4 +332,32 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>multi-arch</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <configuration>
+                            <from>
+                                <platforms>
+                                    <platform>
+                                        <os>linux</os>
+                                        <architecture>amd64</architecture>
+                                    </platform>
+                                    <platform>
+                                        <os>linux</os>
+                                        <architecture>arm64</architecture>
+                                    </platform>
+                                </platforms>
+                            </from>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
