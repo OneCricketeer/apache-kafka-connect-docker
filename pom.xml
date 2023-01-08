@@ -265,6 +265,16 @@
                     <configuration>
                         <from>
                             <image>${jib.from.image}</image>
+                            <platforms>
+                                <platform>
+                                    <os>linux</os>
+                                    <architecture>amd64</architecture>
+                                </platform>
+                                <platform>
+                                    <os>linux</os>
+                                    <architecture>arm64</architecture>
+                                </platform>
+                            </platforms>
                         </from>
                         <to>
                             <image>${jib.to.image}</image>
@@ -288,7 +298,8 @@
                             <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                         </container>
                     </configuration>
-                    <executions>
+                    <!-- TODO: throws errors with multi-platform builds. Move to profile -->
+                    <!-- <executions>
                         <execution>
                             <id>dockerBuild</id>
                             <goals>
@@ -296,7 +307,7 @@
                             </goals>
                             <phase>package</phase>
                         </execution>
-                    </executions>
+                    </executions> -->
                 </plugin>
 
                 <plugin>
