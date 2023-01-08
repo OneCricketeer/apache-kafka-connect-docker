@@ -67,7 +67,7 @@ BUILDX_PLATFORMS=linux/arm64,linux/amd64 make
 
 ## Push to a private registry
 
-To push to a private Docker Registry, you'll need to `docker login` to that address. The following commands will push the `apache-kafka-docker` image to a Docker Registry under your local username. Feel free to change `DOCKER_USER` to a custom repo name in the Registry.
+To push to a private Docker Registry, you'll need to `docker login` to that address. The following commands will push the `apache-kafka-connect` image to a Docker Registry under your local username. Feel free to change `DOCKER_USER` to a custom repo name in the Registry.
 
 ```sh
 $ docker login <registry-address> --username=$(whoami)
