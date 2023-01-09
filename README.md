@@ -218,15 +218,13 @@ Scaling the workers will require adding another container with a unique `CONNECT
 
 ```yml
 connect-jib-2:
-image:  *connect-image
-hostname: connect-jib-2
-depends_on:
-    - kafka
-ports:
-    - '8183:8083'
-environment:
-    <<: *connect-vars
-    CONNECT_REST_ADVERTISED_HOST_NAME: connect-jib-2
+    image:  *connect-image
+    hostname: connect-jib-2
+    depends_on:
+        - kafka
+    environment:
+        <<: *connect-vars
+        CONNECT_REST_ADVERTISED_HOST_NAME: connect-jib-2
 ```
 
 See [`docker-compose.cluster.yml`](./docker-compose.cluster.yml). It can be ran via `docker compose -f docker-compose.cluster.yml up`.
