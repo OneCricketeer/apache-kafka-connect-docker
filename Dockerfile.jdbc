@@ -1,0 +1,24 @@
+FROM cricketeerone/apache-kafka-connect:latest-confluent-hub
+
+ARG CONFLUENT_VERSION_JDBC=10.6.4
+ARG DEBEZIUM_VERSION=2.0.1
+ARG MYSQL_DRIVER_VERSION=8.0.32
+
+RUN confluent-hub install --no-prompt \
+    --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
+	confluentinc/kafka-connect-jdbc:${CONFLUENT_VERSION_JDBC} \
+    && confluent-hub install --no-prompt \
+    --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
+    debezium/debezium-connector-postgresql:${DEBEZIUM_VERSION} \
+    && confluent-hub install --no-prompt \
+    --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
+    debezium/debezium-connector-mysql:${DEBEZIUM_VERSION} \
+    && confluent-hub install --no-prompt \
+    --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
+    debezium/debezium-connector-sqlserver:${DEBEZIUM_VERSION}
+
+RUN mkdir -p /app/jdbc-drivers \
+    && curl -o /app/jdbc-drivers/mysql-connector-j-${MYSQL_DRIVER_VERSION}.jar \
+    https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/${MYSQL_DRIVER_VERSION}/mysql-connector-j-${MYSQL_DRIVER_VERSION}.jar
+
+ENV CLASSPATH '/app/libs/confluentinc-kafka-connect-jdbc/lib/*.jar:/app/jdbc-drivers/*.jar'

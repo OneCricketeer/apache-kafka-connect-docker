@@ -17,3 +17,5 @@ docker-compose*.yml
 LICENSE
 *.txt
 *.md
+
+Dockerfile.*
