@@ -1,7 +1,7 @@
 # Originated from https://github.com/bitnami/bitnami-docker-kafka/blob/0b1b18843b8a5c754a4c6e52a49ac5cf992fa5ed/docker-compose.yml
 version: '3'
 
-x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.3.2
+x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.3.2-alpine
 
 x-connect: &connect-vars
   CONNECT_BOOTSTRAP_SERVERS: kafka:29092
@@ -41,7 +41,6 @@ services:
     restart: unless-stopped
     ports:
       - '9092:9092'
-      - '29092:29092'
     volumes:
       - 'kafka_data:/bitnami/kafka'
       - $PWD/lipsum.txt:/data/lipsum.txt:ro  # Some data to produce

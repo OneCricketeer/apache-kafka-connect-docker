@@ -37,3 +37,6 @@ jobs:
 
       - name: Build & Push
         run: BUILDX_PLATFORMS=linux/arm64,linux/amd64 make
+
+      - name: Build & Push (alpine)
+        run: BUILDX_PLATFORMS=linux/arm64,linux/amd64 make buildx-confluent-hub-alpine

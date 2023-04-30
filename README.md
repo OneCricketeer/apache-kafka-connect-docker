@@ -1,15 +1,15 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
 <!-- Note: Version is listed in URL -->
-![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.3.2?logo=docker&style=flat-square)
-![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.3.2?logo=docker&label=size&style=flat-square)
-![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square) 
+[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.3.2?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.3.2?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect)
 
-[![GitHub](https://img.shields.io/github/license/OneCricketeer/apache-kafka-connect-docker?color=%23ce353d&logo=apache&style=flat-square)](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/master/LICENSE)
+[![LICENSE](https://img.shields.io/github/license/OneCricketeer/apache-kafka-connect-docker?color=%23ce353d&logo=apache&style=flat-square)](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/master/LICENSE)
 
 Using [GoogleContainerTools/Jib](https://github.com/GoogleContainerTools/jib) to package Apache Kafka Connect Distributed Server.
 
-Docker Pull! 🐳  
+Docker Pull! 🐳
 
 ```sh
 docker pull cricketeerone/apache-kafka-connect
@@ -20,6 +20,8 @@ There is also an image that includes `confluent-hub`!
 ```sh
 docker pull cricketeerone/apache-kafka-connect:latest-confluent-hub
 ```
+
+Alpine variants are also available. Check [Docker Hub](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags).
 
 **Table of Contents**
 - [Image Details](#image-details)
@@ -35,10 +37,9 @@ docker pull cricketeerone/apache-kafka-connect:latest-confluent-hub
 
 ## Image Details
 
-Much like the `confluentinc/cp-kafka-connect` images, this container uses environment variables starting with `CONNECT_`, followed by the Kafka Connect Worker properties to be configured. 
+Much like the `confluentinc/cp-kafka-connect` images, this container uses environment variables starting with `CONNECT_`, followed by the Kafka Connect Worker properties to be configured.
 
-For example, these are the bare minimum variables necessary to get a Connect Distributed Server running, 
-but assumes it is connected to Kafka cluster with at least 3 brokers (replication factor for the three topics)
+For example, these are the bare minimum variables necessary to get a Connect Distributed Server running, but assumes it is connected to Kafka cluster with at least 3 brokers (replication factor for the three topics)
 
 ```txt
 CONNECT_BOOTSTRAP_SERVERS
@@ -78,15 +79,15 @@ $ DOCKER_REGISTRY=<registry-address> DOCKER_USER=$(whoami) \
 
 ## Tutorial
 
-The following tutorial for using Jib to package `ConnectDistributed` for Kafka Connect will require installation of `docker-compose`, and uses the [Bitnami](https://github.com/bitnami/bitnami-docker-kafka) Kafka+Zookeeper images, however any other Kafka or ZooKeeper Docker images should work. 
+The following tutorial for using Jib to package `ConnectDistributed` for Kafka Connect will require installation of `docker-compose`, and uses the [Bitnami](https://github.com/bitnami/bitnami-docker-kafka) Kafka+Zookeeper images, however any other Kafka or ZooKeeper Docker images should work.
 
-This tutorial will roughly follow the same steps as the [tutorial for Connect on Kafka's site](https://kafka.apache.org/documentation/#quickstart_kafkaconnect), except using the Distributed Connect server instead. 
+This tutorial will roughly follow the same steps as the [tutorial for Connect on Kafka's site](https://kafka.apache.org/documentation/#quickstart_kafkaconnect), except using the Distributed Connect server instead.
 
 ### Without Docker
 
-If not using Docker, Kafka and ZooKeeper can be started locally using their respective start scripts. If this is done, though, the the variables for the bootstrap servers will need to be adjusted accordingly.  
+If not using Docker, Kafka and ZooKeeper can be started locally using their respective start scripts. If this is done, though, the the variables for the bootstrap servers will need to be adjusted accordingly.
 
-The following steps can be used to run this application locally outside of Docker.  
+The following steps can be used to run this application locally outside of Docker.
 
 ```bash
 export CONNECT_BOOTSTRAP_SERVERS=localhost:9092  # Assumes Kafka default port
@@ -110,58 +111,60 @@ export CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.converters.ByteArrayConv
 
 ### Start Kafka Cluster in Docker
 
-> ***Note***: Sometimes the Kafka container kills itself in below steps, and the consumer commands therefore may need to be re-executed. The Streams Application should reconnect on its own. 
+> ***Note***: Sometimes the Kafka container kills itself in below steps, and the consumer commands therefore may need to be re-executed. The Streams Application should reconnect on its own.
 
-For this exercise, we will be using three separate termainal windows, so go ahead and open those. 
+For this exercise, we will be using three separate termainal windows, so go ahead and open those.
 
 First, we start with getting our cluster running in the foreground. This starts Kafka listening on `9092` on the host, and `29092` within the Docker network. Zookeeper is available on `2181`.
 
 > *Terminal 1*
 
 ```bash
-docker-compose up zookeeper kafka
+docker compose up zookeeper kafka
 ```
 
 ### Create Kafka Topics
 
-We need to create the topics where data will be produced into. 
+We need to create the topics where data will be produced into.
 
 > *Terminal 2*
 
 ```bash
-docker-compose exec kafka \
+docker compose exec kafka \
     bash -c "kafka-topics.sh --create --bootstrap-server kafka:29092 --topic input --partitions=1 --replication-factor=1"
 ```
 
 Verify topics exist
 
 ```bash
-docker-compose exec kafka \
+docker compose exec kafka \
     bash -c "kafka-topics.sh --list --bootstrap-server kafka:29092"
 ```
 
 ### Produce Lorem Ipsum into input topic
 
 ```bash
-docker-compose exec kafka \
-    bash -c "cat /data/lipsum.txt | kafka-console-producer.sh --topic input --broker-list kafka:9092"
+docker compose exec kafka \
+    bash -c "cat /data/lipsum.txt | kafka-console-producer.sh --topic input --broker-list kafka:29092"
 ```
 
 Verify that data is there (note: hard-coding `max-messages` to the number of lines of expected text)
 
 ```bash
-docker-compose exec kafka \
-    bash -c "kafka-console-consumer.sh --topic input --bootstrap-server kafka:9092 --from-beginning --max-messages=9"
+docker compose exec kafka \
+    bash -c "kafka-console-consumer.sh --topic input --bootstrap-server kafka:29092 --from-beginning --max-messages=9"
 ```
+
+Should see last line `Processed a total of 9 messages`.
 
 ### Start Kafka Connect
 
-Now, we can start Kafka Connect to read from the beginning of the input topic that had data sent into it, and begin processing it. 
+Now, we can start Kafka Connect to read from the beginning of the input topic that had data sent into it, and begin processing it. Here, we build the Alpine variant of the container, as it renders a smaller container.
 
 ```bash
-./mvnw clean install
+./mvnw clean install -Palpine
 
-docker-compose up connect-jib
+docker compose up connect-jib-1
 ```
 
 Wait for log-line `Kafka Connect Started`, then post the FileSink Connector, which when not provided a `file`, will output the stdout of the container (Terminal 1).
@@ -171,7 +174,7 @@ Wait for log-line `Kafka Connect Started`, then post the FileSink Connector, whi
 Use Kafka Connect REST API to start this process
 
 ```bash
-curl -XPUT http://localhost:8083/connectors/console-sink/config -H 'Content-Type: application/json' -d '{ 
+curl -XPUT http://localhost:8083/connectors/console-sink/config -H 'Content-Type: application/json' -d '{
     "connector.class": "FileStreamSink",
     "tasks.max": 1,
     "topics": "input",
@@ -200,11 +203,11 @@ To repeat that process, we delete the connector and reset the consumer group.
 ```bash
 curl -XDELETE http://localhost:8083/connectors/console-sink
 
-docker-compose exec kafka \
-    bash -c "kafka-consumer-groups.sh --bootstrap-server kafka:9092 --group connect-console-sink --reset-offsets --all-topics --to-earliest --execute" 
+docker compose exec kafka \
+    bash -c "kafka-consumer-groups.sh --bootstrap-server kafka:9092 --group connect-console-sink --reset-offsets --all-topics --to-earliest --execute"
 ```
 
-Re-run above console-producer and `curl -XPUT ...` command, but this time, there will be more than 9 total messages printed. 
+Re-run above console-producer and `curl -XPUT ...` command, but this time, there will be more than 9 total messages printed.
 
 ## Extra
 
@@ -233,7 +236,7 @@ See [`docker-compose.cluster.yml`](./docker-compose.cluster.yml). It can be ran 
 
 > ***Disclaimer***  It is best to think of this image as a base upon which you can add your own Connectors. Below is the output of the default connector plugins, as provided by Apache Kafka project.
 
-Connector plugins should preferably be placed into `/app/libs`, thus requiring an environment variable of `CONNECT_PLUGIN_PATH="/app/libs"`. 
+Connector plugins should preferably be placed into `/app/libs`, thus requiring an environment variable of `CONNECT_PLUGIN_PATH="/app/libs"`.
 
 When using the `confluent-hub` versions, you can extend those images like so
 
@@ -246,11 +249,11 @@ RUN confluent-hub install --no-prompt \
     <connector-id>
 ```
 
-Where `<connector-id>` is copied from one of the available sources on [Confluent Hub](https://www.confluent.io/hub/). There is no guarantee in compatibility with the Kafka Connect base version and any version of a plugin that you install. 
+Where `<connector-id>` is copied from one of the available sources on [Confluent Hub](https://www.confluent.io/hub/). There is no guarantee in compatibility with the Kafka Connect base version and any version of a plugin that you install.
 
-To re-iterate, `confluent-hub` is **not** part of the base image versions; they **only include** Connector classes provided by Apache Kafka. These are limited to File Sink/Source and MirrorSource Connector (MirrorMaker 2.0). In general, you'll probably want to add your own Connectors, as above, rather than use this image by itself. 
+To re-iterate, `confluent-hub` is **not** part of the base image versions; they **only include** Connector classes provided by Apache Kafka. These are limited to File Sink/Source and MirrorSource Connector (MirrorMaker 2.0). In general, you'll probably want to add your own Connectors, as above, rather than use this image by itself.
 
-For a full example of adding plugins, and using the [Confluent Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html), please [refer to the `schema-registry` branch](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/schema-registry/Dockerfile.schema-registry). 
+For a full example of adding plugins, and using the [Confluent Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html), please [refer to the `schema-registry` branch](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/schema-registry/Dockerfile.schema-registry).
 
 #### Default Plugins
 
@@ -288,16 +291,16 @@ $ curl localhost:8083/connector-plugins | jq
 The File Source/Sink are **not** to be used in production, and is only really meant as a "simple, standalone example," [according to the docs](https://kafka.apache.org/documentation/#connect_developing) (emphasis added).
 
 > A _simple **example**_ is included with the source code for Kafka in the `file` package. This connector is **_meant for use in standalone mode_**
-> 
-> ... 
-> 
+>
+> ...
+>
 > files have trivially structured data -- each line is just a string. Almost **_all practical connectors_** will need schemas with more complex data formats.
 
-That being said, the MirrorSource would be a more real-world example 
+That being said, the MirrorSource would be a more real-world example
 
 ## HTTP Authentication
 
-[Confluent documentation covers this for Basic Auth](https://docs.confluent.io/platform/current/security/basic-auth.html#kconnect-rest-api). 
+[Confluent documentation covers this for Basic Auth](https://docs.confluent.io/platform/current/security/basic-auth.html#kconnect-rest-api).
 
 Create files
 
@@ -325,7 +328,7 @@ Add environment variables and mounts (`JAVA_TOOL_OPTIONS` comes from Eclipse Tem
       - /tmp/connect.password:/tmp/connect.password:ro
 ```
 
-`docker-compose up` and test it 
+`docker compose up` and test it
 
 ```shell
 $ curl -w'\n' http://localhost:8083
@@ -334,18 +337,18 @@ $ curl -w'\n' -uadmin:OneCricketeer http://localhost:8083
 {"version":"3.3.2","commit":"b66af662e61082cb","kafka_cluster_id":"pPgOWYmWQwiODAOVvdnycw"}
 ```
 
-## Maven Details 
+## Maven Details
 
 The `exec:java` goal can be used to run Kafka Connect outside of Docker.
 
-To rebuild the container, for example, run `./mvnw clean package` or `make`.
+To rebuild the container, for example, run `./mvnw clean install` or `make`.
 
 ## Cleanup environment
 
 ```bash
-docker-compose rm -sf
+docker compose rm -sf
 # Clean up mounted docker volumes
-docker volume ls | grep $(basename `pwd`) | awk '{print $2}' | xargs docker volume rm 
+docker volume ls | grep $(basename `pwd`) | awk '{print $2}' | xargs docker volume rm
 # Clean up networks
 docker network ls | grep $(basename `pwd`) | awk '{print $2}' | xargs docker network rm
 ```

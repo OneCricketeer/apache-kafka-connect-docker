@@ -1,6 +1,8 @@
 .idea/
 *.iml
 
+.vscode/
+
 .mvn/
 mvnw*
 pom.xml
@@ -9,10 +11,11 @@ target/
 
 Makefile
 
-.git/
+.git*
 .gitignore
 
-docker-compose.yml
+Dockerfile.*
+docker-compose.*.yml
 
 LICENSE
 *.txt
