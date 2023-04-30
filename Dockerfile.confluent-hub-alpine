@@ -8,7 +8,7 @@ RUN apk update && apk add --no-cache \
 
 # Install Confluent Hub CLI
 RUN mkdir -p /opt/confluent-hub-client \
-    && curl -vv -kL "http://client.hub.confluent.io/confluent-hub-client-latest.tar.gz" \
+    && curl -vv -kL "https://client.hub.confluent.io/confluent-hub-client-latest.tar.gz" \
     | tar -xzv -C /opt/confluent-hub-client
 ENV PATH="/opt/confluent-hub-client/bin:${PATH}"
 

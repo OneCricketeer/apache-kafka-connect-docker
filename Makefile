@@ -32,7 +32,7 @@ build-confluent-hub: build
 	@docker tag $(DOCKER_FQN):$(VERSION)-$(DOCKER_TAG_CONFLUENT_HUB) $(DOCKER_FQN):latest-$(DOCKER_TAG_CONFLUENT_HUB)
 build-confluent-hub-alpine: build-alpine
 	@docker build -f $(DOCKERFILE_CONFLUENT_HUB)-alpine -t $(DOCKER_FQN):$(VERSION)-alpine-$(DOCKER_TAG_CONFLUENT_HUB) .
-	@docker tag $(DOCKER_FQN):$(VERSION)-$(DOCKER_TAG_CONFLUENT_HUB) $(DOCKER_FQN):alpine-$(DOCKER_TAG_CONFLUENT_HUB)
+	@docker tag $(DOCKER_FQN):$(VERSION)-alpine-$(DOCKER_TAG_CONFLUENT_HUB) $(DOCKER_FQN):alpine-$(DOCKER_TAG_CONFLUENT_HUB)
 endif
 
 build:  # default machine architecture build
