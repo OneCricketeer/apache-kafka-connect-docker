@@ -1,4 +1,4 @@
-DOCKER_REGISTRY ?= ''
+DOCKER_REGISTRY ?= 
 DOCKER_USER ?= cricketeerone
 DOCKER_IMAGE ?= apache-kafka-connect
 DOCKER_FQN = $(DOCKER_REGISTRY)$(DOCKER_USER)/$(DOCKER_IMAGE)
@@ -46,13 +46,17 @@ build-multi-arch:  # refer pom.xml for built platforms
 
 # required targets if using `mvn jib:dockerBuild`
 push: build-confluent-hub
+ifneq (jib:build,$(findstring jib:build,$(MVN_BUILD_CMD)))
 	@docker push $(DOCKER_FQN):latest
-	@docker push $(DOCKER_FQN):latest-$(DOCKER_TAG_CONFLUENT_HUB)
 	@docker push $(DOCKER_FQN):$(VERSION)
+endif
+	@docker push $(DOCKER_FQN):latest-$(DOCKER_TAG_CONFLUENT_HUB)
 	@docker push $(DOCKER_FQN):$(VERSION)-$(DOCKER_TAG_CONFLUENT_HUB)
 push-alpine: build-confluent-hub-alpine # separated command as jib is overriding 'latest' tag
+ifneq (jib:build,$(findstring jib:build,$(MVN_BUILD_CMD)))
 	@docker push $(DOCKER_FQN):alpine
 	@docker push $(DOCKER_FQN):$(VERSION)-alpine
+endif
 	@docker push $(DOCKER_FQN):alpine-$(DOCKER_TAG_CONFLUENT_HUB)
 	@docker push $(DOCKER_FQN):$(VERSION)-alpine-$(DOCKER_TAG_CONFLUENT_HUB)
 
