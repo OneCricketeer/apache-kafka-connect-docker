@@ -1,7 +1,7 @@
 # Originated from https://github.com/bitnami/bitnami-docker-kafka/blob/0b1b18843b8a5c754a4c6e52a49ac5cf992fa5ed/docker-compose.yml
 version: '3'
 
-x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.2.3
+x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.3.2
 
 x-connect: &connect-vars
   CONNECT_BOOTSTRAP_SERVERS: kafka:29092
@@ -35,7 +35,7 @@ services:
     volumes:
       - 'zookeeper_data:/bitnami/zookeeper'
   kafka:
-    image: bitnami/kafka:3.2.3
+    image: bitnami/kafka:3.3.2
     depends_on:
       - zookeeper
     restart: unless-stopped
@@ -46,7 +46,9 @@ services:
       - 'kafka_data:/bitnami/kafka'
       - $PWD/lipsum.txt:/data/lipsum.txt:ro  # Some data to produce
     environment:
+      - BITNAMI_DEBUG=yes
       - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_ENABLE_KRAFT=false
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_CFG_DELETE_TOPIC_ENABLE=true
       - KAFKA_CFG_LOG_RETENTION_HOURS=48  # 2 days of retention for demo purposes

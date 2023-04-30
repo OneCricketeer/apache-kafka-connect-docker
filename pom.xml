@@ -5,33 +5,33 @@
 
     <groupId>cricket.jmoore</groupId>
     <artifactId>kafka-connect-docker</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.2</version>
     <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
 
         <kafka.version>${project.version}</kafka.version>
-        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/3.2.3/gradle/dependencies.gradle -->
+        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/3.3.2/gradle/dependencies.gradle -->
         <jetty.version>9.4.48.v20220622</jetty.version>
         <jersey.version>2.34</jersey.version>
-        <jackson.version>2.13.3</jackson.version>
-        <jackson.databind.version>2.13.3</jackson.databind.version>
+        <jackson.version>2.13.4</jackson.version>
+        <jackson.databind.version>2.13.4.2</jackson.databind.version>
         <slf4j.version>1.7.36</slf4j.version>
         <!-- Extras -->
-        <log4j2.version>2.19.0</log4j2.version> <!-- Replace reload4j -->
+        <log4j2.version>2.20.0</log4j2.version> <!-- Replace reload4j -->
 
         <!-- Tests -->
-        <junit.version>5.9.1</junit.version>
-        <assertj.version>3.24.1</assertj.version>
+        <junit.version>5.9.3</junit.version>
+        <assertj.version>3.24.2</assertj.version>
 
         <!-- Packaging -->
         <mainClass>org.apache.kafka.connect.cli.ConnectDistributedWrapper</mainClass>
         <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
-        <jib.from.image>eclipse-temurin:11-jre</jib.from.image>
+        <jib.from.image>eclipse-temurin:17-jre</jib.from.image>
         <jib.to.image>cricketeerone/apache-kafka-connect</jib.to.image>
     </properties>
 
@@ -259,6 +259,12 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.3.1</version>
+                </plugin>
+
+                <plugin>
                     <groupId>com.google.cloud.tools</groupId>
                     <artifactId>jib-maven-plugin</artifactId>
                     <version>${jib-maven-plugin.version}</version>
@@ -282,28 +288,19 @@
                                 <jvmFlag>-XX:MaxGCPauseMillis=20</jvmFlag>
                                 <jvmFlag>-XX:InitiatingHeapOccupancyPercent=35</jvmFlag>
                                 <jvmFlag>-XX:+ExplicitGCInvokesConcurrent</jvmFlag>
+                                <!-- MaxInlineLevel=15 is the default since JDK 14 and can be removed once older JDKs are no longer supported -->
                                 <jvmFlag>-XX:MaxInlineLevel=15</jvmFlag>
                                 <jvmFlag>-Djava.awt.headless=true</jvmFlag>
                             </jvmFlags>
                             <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                         </container>
                     </configuration>
-                    <!-- TODO: throws errors with multi-platform builds. Move to profile -->
-                    <!-- <executions>
-                        <execution>
-                            <id>dockerBuild</id>
-                            <goals>
-                                <goal>dockerBuild</goal>
-                            </goals>
-                            <phase>package</phase>
-                        </execution>
-                    </executions> -->
                 </plugin>
 
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
-                    <version>1.6.0</version>
+                    <version>3.1.0</version>
                     <configuration>
                         <mainClass>${mainClass}</mainClass>
                     </configuration>
@@ -311,7 +308,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M7</version>
+                    <version>3.0.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
