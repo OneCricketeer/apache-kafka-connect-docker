@@ -23,10 +23,10 @@ ifneq (,$(findstring arm64,$(BUILDX_PLATFORMS)))
 buildx-confluent-hub: build-multi-arch
 	@docker buildx build -f $(DOCKERFILE_CONFLUENT_HUB) -t $(DOCKER_FQN):$(VERSION)-$(DOCKER_TAG_CONFLUENT_HUB) --push --platform=$(BUILDX_PLATFORMS) .
 	@docker buildx build -f $(DOCKERFILE_CONFLUENT_HUB) -t $(DOCKER_FQN):latest-$(DOCKER_TAG_CONFLUENT_HUB) --push --platform=$(BUILDX_PLATFORMS) .
-buildx-confluent-hub-alpine: build-multi-arch-alpine
-	@docker buildx build -f $(DOCKERFILE_CONFLUENT_HUB)-alpine -t $(DOCKER_FQN):$(VERSION)-alpine-$(DOCKER_TAG_CONFLUENT_HUB) --push --platform=$(BUILDX_PLATFORMS) .
-	@docker buildx build -f $(DOCKERFILE_CONFLUENT_HUB)-alpine -t $(DOCKER_FQN):alpine-$(DOCKER_TAG_CONFLUENT_HUB) --push --platform=$(BUILDX_PLATFORMS) .
 else
+buildx-confluent-hub-alpine: build-multi-arch-alpine # TODO: wait for jre-alpine images to support arm64
+	@docker buildx build -f $(DOCKERFILE_CONFLUENT_HUB)-alpine -t $(DOCKER_FQN):$(VERSION)-alpine-$(DOCKER_TAG_CONFLUENT_HUB) --push --platform=linux/amd64 .
+	@docker buildx build -f $(DOCKERFILE_CONFLUENT_HUB)-alpine -t $(DOCKER_FQN):alpine-$(DOCKER_TAG_CONFLUENT_HUB) --push --platform=linux/amd64 .
 build-confluent-hub: build
 	@docker build -f $(DOCKERFILE_CONFLUENT_HUB) -t $(DOCKER_FQN):$(VERSION)-$(DOCKER_TAG_CONFLUENT_HUB) .
 	@docker tag $(DOCKER_FQN):$(VERSION)-$(DOCKER_TAG_CONFLUENT_HUB) $(DOCKER_FQN):latest-$(DOCKER_TAG_CONFLUENT_HUB)

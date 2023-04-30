@@ -35,8 +35,9 @@ jobs:
           username: cricketeerone
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Build & Push (alpine)  # eclipse-temurin alpine images do not support arm64 at this time
+        run: BUILDX_PLATFORMS=linux/amd64 make buildx-confluent-hub-alpine
+
+      # override :latest tag created in previous step
       - name: Build & Push
         run: BUILDX_PLATFORMS=linux/arm64,linux/amd64 make
-
-      - name: Build & Push (alpine)
-        run: BUILDX_PLATFORMS=linux/arm64,linux/amd64 make buildx-confluent-hub-alpine
