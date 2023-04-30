@@ -12,15 +12,6 @@ jobs:
     if: github.repository == 'OneCricketeer/apache-kafka-connect-docker'
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          platforms: linux/amd64,linux/arm64
-
       - uses: actions/checkout@v3
 
       - name: Set up JDK
@@ -37,6 +28,15 @@ jobs:
 
       - name: Build & Push (alpine)  # eclipse-temurin alpine images do not support arm64 at this time
         run: BUILDX_PLATFORMS=linux/amd64 make buildx-confluent-hub-alpine
+
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          platforms: linux/amd64,linux/arm64
 
       # override :latest tag created in previous step
       - name: Build & Push
