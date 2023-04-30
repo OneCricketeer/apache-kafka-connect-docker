@@ -27,7 +27,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build & Push (alpine)  # eclipse-temurin alpine images do not support arm64 at this time
-        run: BUILDX_PLATFORMS=linux/amd64 make buildx-confluent-hub-alpine
+        run: BUILDX_PLATFORMS=linux/amd64 make push-alpine
 
       -
         name: Set up QEMU
