@@ -26,7 +26,7 @@ x-connect: &connect-vars
   CONNECT_CONSUMER_MAX_POLL_RECORDS: 500
 
 x-kraft: &kraft-vars
-  KAFKA_KRAFT_CLUSTER_ID: ${KAFKA_KRAFT_CLUSTER_ID:-'ACA4lm8dQjC0-pId1GVmTg'} # Run 'kafka-storage random-uuid'
+  KAFKA_KRAFT_CLUSTER_ID: WNfE3WMTRRGBs35BikbfRg # Run 'kafka-storage random-uuid'
   BITNAMI_DEBUG: yes
   ALLOW_PLAINTEXT_LISTENER: yes
   KAFKA_ENABLE_KRAFT: yes
