@@ -80,11 +80,11 @@ class ConnectDistributedWrapperTest implements WithAssertions {
                 WorkerConfig.HEADER_CONVERTER_CLASS_CONFIG,
                 // Internal topics
                 DistributedConfig.STATUS_STORAGE_TOPIC_CONFIG,
+                DistributedConfig.STATUS_STORAGE_REPLICATION_FACTOR_CONFIG,
+                DistributedConfig.CONFIG_TOPIC_CONFIG,
                 DistributedConfig.CONFIG_STORAGE_REPLICATION_FACTOR_CONFIG,
                 DistributedConfig.OFFSET_STORAGE_TOPIC_CONFIG,
-                DistributedConfig.OFFSET_STORAGE_REPLICATION_FACTOR_CONFIG,
-                DistributedConfig.STATUS_STORAGE_TOPIC_CONFIG,
-                DistributedConfig.STATUS_STORAGE_REPLICATION_FACTOR_CONFIG
+                DistributedConfig.OFFSET_STORAGE_REPLICATION_FACTOR_CONFIG
         );
     }
 
