@@ -2,7 +2,7 @@ DOCKER_REGISTRY ?=
 DOCKER_USER ?= cricketeerone
 DOCKER_IMAGE ?= apache-kafka-connect
 DOCKER_FQN = $(DOCKER_REGISTRY)$(DOCKER_USER)/$(DOCKER_IMAGE)
-VERSION = 3.3.2
+VERSION = $(shell ./mvnw org.apache.maven.plugins:maven-help-plugin:3.4.0:evaluate -Dexpression=project.version -q -DforceStdout)
 
 DOCKER_TAG_CONFLUENT_HUB = confluent-hub
 DOCKERFILE_CONFLUENT_HUB = Dockerfile.$(DOCKER_TAG_CONFLUENT_HUB)
@@ -40,7 +40,7 @@ build:  # default machine architecture build
 build-alpine:
 	@$(MAVEN) -Palpine
 build-multi-arch:  # refer pom.xml for built platforms
-	@$(MAVEN) -Pubuntu
+	@$(MAVEN) -Pubuntu,ubuntu-multi-arch
 # build-multi-arch-alpine:  # refer pom.xml for built platforms; TODO: wait for jre-alpine images to support arm64
 #	@$(MAVEN) -Palpine
 

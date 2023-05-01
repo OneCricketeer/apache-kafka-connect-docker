@@ -1,8 +1,8 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
 <!-- Note: Version is listed in URL -->
-[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.3.2?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
-[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.3.2?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.4.0?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.4.0?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
 [![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect)
 
 [![LICENSE](https://img.shields.io/github/license/OneCricketeer/apache-kafka-connect-docker?color=%23ce353d&logo=apache&style=flat-square)](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/master/LICENSE)
@@ -59,12 +59,14 @@ Looking to build your own image? **tl;dr** - Clone repo, and use `./mvnw clean c
 
 **Multi-platform builds (buildx)**
 
-By default, with the above commands, an image should build for your local OS architecture (although, this has not been tested on `arm64` devices).  
+By default, with the above commands, an image will be built for a `linux/amd64` Ubuntu-based container.  
 The following builds and pushes multi-platform images to Docker Hub via Docker Buildx.
 
 ```sh
 BUILDX_PLATFORMS=linux/arm64,linux/amd64 make
 ```
+
+As of May 2023, Alpine variants of Eclipse Temurin images do not support `arm64`.
 
 ## Push to a private registry
 
@@ -93,7 +95,7 @@ The following steps can be used to run this application locally outside of Docke
 # Assumes Kafka default port
 export CONNECT_BOOTSTRAP_SERVERS=127.0.0.1:9092
 
-export CONNECT_GROUP_ID=cg_connect-idea
+export CONNECT_GROUP_ID=cg_connect-jib
 export CONNECT_CONFIG_STORAGE_TOPIC=connect-jib_config
 export CONNECT_OFFSET_STORAGE_TOPIC=connect-jib_offsets
 export CONNECT_STATUS_STORAGE_TOPIC=connect-jib_status
@@ -268,27 +270,27 @@ $ curl localhost:8083/connector-plugins | jq
     {
         "class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
         "type": "sink",
-        "version": "3.3.2"
+        "version": "3.4.0"
     },
     {
         "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
         "type": "source",
-        "version": "3.3.2"
+        "version": "3.4.0"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
         "type": "source",
-        "version": "3.3.2"
+        "version": "3.4.0"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorHeartbeatConnector",
         "type": "source",
-        "version": "3.3.2"
+        "version": "3.4.0"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
         "type": "source",
-        "version": "3.3.2"
+        "version": "3.4.0"
     }
 ]
 ```
@@ -339,7 +341,7 @@ Add environment variables and mounts (`JAVA_TOOL_OPTIONS` comes from Eclipse Tem
 $ curl -w'\n' http://localhost:8083
 User cannot access the resource.
 $ curl -w'\n' -uadmin:OneCricketeer http://localhost:8083
-{"version":"3.3.2","commit":"b66af662e61082cb","kafka_cluster_id":"pPgOWYmWQwiODAOVvdnycw"}
+{"version":"3.4.0","commit":"2e1947d240607d53","kafka_cluster_id":"nA5eYC5WSrSHjaKgw1BpHg"}
 ```
 
 ## Maven Details
