@@ -31,7 +31,7 @@
         <!-- Packaging -->
         <mainClass>org.apache.kafka.connect.cli.ConnectDistributedWrapper</mainClass>
         <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
-        <baseDockerImage>eclipse-temurin:17-jre</baseDockerImage>
+        <baseDockerImage>eclipse-temurin:${maven.compiler.target}-jre</baseDockerImage>
         <jib.from.image>${baseDockerImage}</jib.from.image>
         <jib.to.image>cricketeerone/apache-kafka-connect</jib.to.image>
     </properties>
@@ -270,6 +270,12 @@
                     <artifactId>jib-maven-plugin</artifactId>
                     <version>${jib-maven-plugin.version}</version>
                     <configuration>
+                        <from>
+                            <image>${jib.from.image}</image>
+                        </from>
+                        <to>
+                            <image>${jib.to.image}</image>
+                        </to>
                         <container>
                             <mainClass>${mainClass}</mainClass>
                             <jvmFlags>
@@ -371,11 +377,7 @@
                         <groupId>com.google.cloud.tools</groupId>
                         <artifactId>jib-maven-plugin</artifactId>
                         <configuration>
-                            <from>
-                                <image>${jib.from.image}</image>
-                            </from>
                             <to>
-                                <image>${jib.to.image}</image>
                                 <tags>
                                     <tag>latest</tag>
                                     <tag>${project.version}</tag>
@@ -387,7 +389,7 @@
             </build>
         </profile>
         <profile>
-            <id>alpine</id>
+            <id>alpine-temurin</id>
             <properties>
                 <jib.from.image>${baseDockerImage}-alpine</jib.from.image>
             </properties>
@@ -397,20 +399,7 @@
                         <groupId>com.google.cloud.tools</groupId>
                         <artifactId>jib-maven-plugin</artifactId>
                         <configuration>
-                            <from>
-                                <platforms>
-                                    <platform>
-                                        <os>linux</os>
-                                        <architecture>amd64</architecture>
-                                    </platform>
-                                    <!-- <platform>
-                                        <os>linux</os>
-                                        <architecture>arm64</architecture>
-                                    </platform> -->
-                                </platforms>
-                            </from>
                             <to>
-                                <image>${jib.to.image}</image>
                                 <tags>
                                     <tag>alpine</tag>
                                     <tag>${project.version}-alpine</tag>
@@ -430,7 +419,6 @@
                         <artifactId>jib-maven-plugin</artifactId>
                         <configuration>
                             <from>
-                                <image>${jib.from.image}</image>
                                 <platforms>
                                     <platform>
                                         <os>linux</os>
@@ -442,6 +430,41 @@
                                     </platform>
                                 </platforms>
                             </from>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>alpine-multi-arch</id>
+            <properties>
+                <!-- FIX: Eclipse Temruin alpine images do not release arm64 -->
+                <jib.from.image>amazoncorretto:${maven.compiler.target}-alpine</jib.from.image>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <configuration>
+                            <from>
+                                <platforms>
+                                    <platform>
+                                        <os>linux</os>
+                                        <architecture>amd64</architecture>
+                                    </platform>
+                                    <platform>
+                                        <os>linux</os>
+                                        <architecture>arm64</architecture>
+                                    </platform>
+                                </platforms>
+                            </from>
+                            <to>
+                                <tags>
+                                    <tag>alpine</tag>
+                                    <tag>${project.version}-alpine</tag>
+                                </tags>
+                            </to>
                         </configuration>
                     </plugin>
                 </plugins>
