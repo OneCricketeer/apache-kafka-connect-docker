@@ -1,12 +1,11 @@
-# Originated from https://github.com/bitnami/bitnami-docker-kafka/blob/0b1b18843b8a5c754a4c6e52a49ac5cf992fa5ed/docker-compose.yml
 version: '3'
 
-x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.3.2-alpine
+x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.3.2
 
 x-connect: &connect-vars
   CONNECT_BOOTSTRAP_SERVERS: kafka:29092
 
-  CONNECT_GROUP_ID: cg_connect
+  CONNECT_GROUP_ID: cg_connect-jib
   CONNECT_CONFIG_STORAGE_TOPIC: connect-jib_config
   CONNECT_OFFSET_STORAGE_TOPIC: connect-jib_offsets
   CONNECT_STATUS_STORAGE_TOPIC: connect-jib_status
@@ -14,47 +13,44 @@ x-connect: &connect-vars
   CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
   CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
   CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
-
+  # Defaults for all connectors
   CONNECT_KEY_CONVERTER: org.apache.kafka.connect.converters.ByteArrayConverter
   CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.converters.ByteArrayConverter
-
+  # Where Jib places classes
   CONNECT_PLUGIN_PATH: /app/libs
 
   # Connect client overrides
   CONNECT_TASK_SHUTDOWN_GRACEFUL_TIMEOUT_MS: 30000
   CONNECT_OFFSET_FLUSH_INTERVAL_MS: 900000
-  # CONNECT_CONSUMER_MAX_POLL_RECORDS: 500   default==500
+  # Connect consumer overrides
+  CONNECT_CONSUMER_MAX_POLL_RECORDS: 500
 
 services:
-  zookeeper:
-    image: bitnami/zookeeper:3.8-debian-11
-    ports:
-      - '2181:2181'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-    volumes:
-      - 'zookeeper_data:/bitnami/zookeeper'
   kafka:
     image: bitnami/kafka:3.3.2
-    depends_on:
-      - zookeeper
     restart: unless-stopped
     ports:
       - '9092:9092'
     volumes:
       - 'kafka_data:/bitnami/kafka'
+      - $PWD/bitnami-kraft-libkafka.sh:/opt/bitnami/scripts/libkafka.sh:ro # HOTFIX
       - $PWD/lipsum.txt:/data/lipsum.txt:ro  # Some data to produce
     environment:
-      - BITNAMI_DEBUG=yes
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_ENABLE_KRAFT=false
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_CFG_DELETE_TOPIC_ENABLE=true
-      - KAFKA_CFG_LOG_RETENTION_HOURS=48  # 2 days of retention for demo purposes
+      BITNAMI_DEBUG: yes
+      ALLOW_PLAINTEXT_LISTENER: yes
+      # BEGIN: Kraft
+      KAFKA_ENABLE_KRAFT: yes
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      # END: Kraft
+      KAFKA_CFG_DELETE_TOPIC_ENABLE: 'true'
+      KAFKA_CFG_LOG_RETENTION_HOURS: 48  # 2 days of retention for demo purposes
       # https://rmoff.net/2018/08/02/kafka-listeners-explained/
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:29092,PLAINTEXT_HOST://0.0.0.0:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_CFG_LISTENERS: INTERNAL://:29092,CONTROLLER://:9093,EXTERNAL://0.0.0.0:9092
+      KAFKA_CFG_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
 
   # Jib app
   connect-jib-1:
@@ -69,7 +65,5 @@ services:
       CONNECT_REST_ADVERTISED_HOST_NAME: connect-jib-1
 
 volumes:
-  zookeeper_data:
-    driver: local
   kafka_data:
     driver: local

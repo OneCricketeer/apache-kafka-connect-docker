@@ -79,18 +79,19 @@ $ DOCKER_REGISTRY=<registry-address> DOCKER_USER=$(whoami) \
 
 ## Tutorial
 
-The following tutorial for using Jib to package `ConnectDistributed` for Kafka Connect will require installation of `docker-compose`, and uses the [Bitnami](https://github.com/bitnami/bitnami-docker-kafka) Kafka+Zookeeper images, however any other Kafka or ZooKeeper Docker images should work.
+The following tutorial uses Jib to package `ConnectDistributed` class for running Kafka Connect Distributed mode workers. The following instructions use the [Bitnami](https://github.com/bitnami/bitnami-docker-kafka) Kafka images, however any other Kafka Docker images should work.
 
 This tutorial will roughly follow the same steps as the [tutorial for Connect on Kafka's site](https://kafka.apache.org/documentation/#quickstart_kafkaconnect), except using the Distributed Connect server instead.
 
 ### Without Docker
 
-If not using Docker, Kafka and ZooKeeper can be started locally using their respective start scripts. If this is done, though, the the variables for the bootstrap servers will need to be adjusted accordingly.
+If not using Docker, Kafka (and ZooKeeper, if not using Kraft) can be started locally using their respective start scripts. If this is done, though, the variables for the bootstrap servers will need to be adjusted accordingly.
 
 The following steps can be used to run this application locally outside of Docker.
 
 ```bash
-export CONNECT_BOOTSTRAP_SERVERS=localhost:9092  # Assumes Kafka default port
+# Assumes Kafka default port
+export CONNECT_BOOTSTRAP_SERVERS=localhost:9092
 
 export CONNECT_GROUP_ID=cg_connect-idea
 export CONNECT_CONFIG_STORAGE_TOPIC=connect-jib_config
@@ -105,22 +106,22 @@ export CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1
 export CONNECT_KEY_CONVERTER=org.apache.kafka.connect.converters.ByteArrayConverter
 export CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.converters.ByteArrayConverter
 
-# Runs ConnectDistrbuted via Maven
+# Runs ConnectDistributed via Maven
 ./mvnw clean exec:java
 ```
 
 ### Start Kafka Cluster in Docker
 
-> ***Note***: Sometimes the Kafka container kills itself in below steps, and the consumer commands therefore may need to be re-executed. The Streams Application should reconnect on its own.
+> ***Note***: Sometimes the Kafka container kills itself in below steps, and the consumer commands therefore may need to be re-executed. The Connect worker should reconnect on its own.
 
-For this exercise, we will be using three separate termainal windows, so go ahead and open those.
+For this exercise, we will be using three separate terminal windows, so go ahead and open those.
 
-First, we start with getting our cluster running in the foreground. This starts Kafka listening on `9092` on the host, and `29092` within the Docker network. Zookeeper is available on `2181`.
+First, we start with getting our cluster running in the foreground. This starts Kafka listening on `9092` on the host, and `29092` within the Docker network.
 
 > *Terminal 1*
 
 ```bash
-docker compose up zookeeper kafka
+docker compose up kafka
 ```
 
 ### Create Kafka Topics
@@ -141,6 +142,8 @@ docker compose exec kafka \
     bash -c "kafka-topics.sh --list --bootstrap-server kafka:29092"
 ```
 
+Should include `input` topic in the list.
+
 ### Produce Lorem Ipsum into input topic
 
 ```bash
@@ -159,15 +162,15 @@ Should see last line `Processed a total of 9 messages`.
 
 ### Start Kafka Connect
 
-Now, we can start Kafka Connect to read from the beginning of the input topic that had data sent into it, and begin processing it. Here, we build the Alpine variant of the container, as it renders a smaller container.
+Now, we can build the Kafka Connect image and start it.
 
 ```bash
-./mvnw clean install -Palpine
+./mvnw clean install
 
 docker compose up connect-jib-1
 ```
 
-Wait for log-line `Kafka Connect Started`, then post the FileSink Connector, which when not provided a `file`, will output the stdout of the container (Terminal 1).
+Wait for log-line `Kafka Connect Started`, then post the FileSink Connector. When not provided a `file`, will output the stdout of the container (Terminal 1).
 
 > *Terminal 3*
 
@@ -188,6 +191,8 @@ curl -XPUT http://localhost:8083/connectors/console-sink/config -H 'Content-Type
 }'
 ```
 
+This will read from the beginning of the `input` topic that had data sent into it, and begin processing it.
+
 In the output of _Terminal 2_, you should see something similar to the following.
 
 ```text
@@ -204,7 +209,7 @@ To repeat that process, we delete the connector and reset the consumer group.
 curl -XDELETE http://localhost:8083/connectors/console-sink
 
 docker compose exec kafka \
-    bash -c "kafka-consumer-groups.sh --bootstrap-server kafka:9092 --group connect-console-sink --reset-offsets --all-topics --to-earliest --execute"
+    bash -c "kafka-consumer-groups.sh --bootstrap-server kafka:29092 --group connect-console-sink --reset-offsets --all-topics --to-earliest --execute"
 ```
 
 Re-run above console-producer and `curl -XPUT ...` command, but this time, there will be more than 9 total messages printed.
@@ -213,7 +218,7 @@ Re-run above console-producer and `curl -XPUT ...` command, but this time, there
 
 ### Scaling up
 
-Redo the tutorial with more input data and partitions and increase `max.tasks` of the connector. Notice that the `partition` field in the output may change (you may need to produce data multiple times to randomize the record batches).
+Redo the tutorial with a new topic having more than one partition. Produce more input data to it, then increase `max.tasks` of the connector. Notice that the `partition` field in the output may change (you may need to produce data multiple times to randomize the record batches).
 
 ### Scaling out
 
@@ -230,7 +235,7 @@ connect-jib-2:
         CONNECT_REST_ADVERTISED_HOST_NAME: connect-jib-2
 ```
 
-See [`docker-compose.cluster.yml`](./docker-compose.cluster.yml). It can be ran via `docker compose -f docker-compose.cluster.yml up`.
+A reverse proxy should be added in front of all instances. See an example using Træfik in [`docker-compose.cluster.yml`](./docker-compose.cluster.yml). It can be ran via `docker compose -f docker-compose.cluster.yml up` and tested with `curl -H Host:connect-jib.docker.localhost http://127.0.0.1/`.
 
 ## Extending with new Connectors
 
