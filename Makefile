@@ -2,7 +2,7 @@ DOCKER_REGISTRY ?=
 DOCKER_USER ?= cricketeerone
 DOCKER_IMAGE ?= apache-kafka-connect
 DOCKER_FQN = $(DOCKER_REGISTRY)$(DOCKER_USER)/$(DOCKER_IMAGE)
-VERSION = 3.4.0
+VERSION = $(shell ./mvnw org.apache.maven.plugins:maven-help-plugin:3.4.0:evaluate -Dexpression=project.version -q -DforceStdout)
 
 DOCKER_TAG_CONFLUENT_HUB = confluent-hub
 DOCKERFILE_CONFLUENT_HUB = Dockerfile.$(DOCKER_TAG_CONFLUENT_HUB)
