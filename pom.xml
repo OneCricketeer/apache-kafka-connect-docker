@@ -5,7 +5,7 @@
 
     <groupId>cricket.jmoore</groupId>
     <artifactId>kafka-connect-docker</artifactId>
-    <version>3.3.2</version>
+    <version>3.4.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -15,7 +15,7 @@
         <maven.compiler.target>17</maven.compiler.target>
 
         <kafka.version>${project.version}</kafka.version>
-        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/3.3.2/gradle/dependencies.gradle -->
+        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/3.4.0/gradle/dependencies.gradle -->
         <jetty.version>9.4.48.v20220622</jetty.version>
         <jersey.version>2.34</jersey.version>
         <jackson.version>2.13.4</jackson.version>
@@ -373,16 +373,6 @@
                         <configuration>
                             <from>
                                 <image>${jib.from.image}</image>
-                                <platforms>
-                                    <platform>
-                                        <os>linux</os>
-                                        <architecture>amd64</architecture>
-                                    </platform>
-                                    <platform>
-                                        <os>linux</os>
-                                        <architecture>arm64</architecture>
-                                    </platform>
-                                </platforms>
                             </from>
                             <to>
                                 <image>${jib.to.image}</image>
@@ -426,6 +416,32 @@
                                     <tag>${project.version}-alpine</tag>
                                 </tags>
                             </to>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>ubuntu-multi-arch</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <configuration>
+                            <from>
+                                <image>${jib.from.image}</image>
+                                <platforms>
+                                    <platform>
+                                        <os>linux</os>
+                                        <architecture>amd64</architecture>
+                                    </platform>
+                                    <platform>
+                                        <os>linux</os>
+                                        <architecture>arm64</architecture>
+                                    </platform>
+                                </platforms>
+                            </from>
                         </configuration>
                     </plugin>
                 </plugins>
