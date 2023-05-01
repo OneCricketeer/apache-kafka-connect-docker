@@ -91,7 +91,7 @@ The following steps can be used to run this application locally outside of Docke
 
 ```bash
 # Assumes Kafka default port
-export CONNECT_BOOTSTRAP_SERVERS=localhost:9092
+export CONNECT_BOOTSTRAP_SERVERS=127.0.0.1:9092
 
 export CONNECT_GROUP_ID=cg_connect-idea
 export CONNECT_CONFIG_STORAGE_TOPIC=connect-jib_config
@@ -170,7 +170,7 @@ Now, we can build the Kafka Connect image and start it.
 docker compose up connect-jib-1
 ```
 
-Wait for log-line `Kafka Connect Started`, then post the FileSink Connector. When not provided a `file`, will output the stdout of the container (Terminal 1).
+Wait for log-line `Kafka Connect Started`, then post the FileSink Connector. When not provided a `file`, the connector tasks will write data to the stdout of the container (Terminal 1).
 
 > *Terminal 3*
 
