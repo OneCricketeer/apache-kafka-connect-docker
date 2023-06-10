@@ -1,8 +1,8 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
 <!-- Note: Version is listed in URL -->
-[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.4.0?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
-[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.4.0?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.4.1?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.4.1?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
 [![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect)
 
 [![LICENSE](https://img.shields.io/github/license/OneCricketeer/apache-kafka-connect-docker?color=%23ce353d&logo=apache&style=flat-square)](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/master/LICENSE)
@@ -245,7 +245,7 @@ A reverse proxy should be added in front of all instances. See an example using 
 
 Connector plugins should preferably be placed into `/app/libs`, thus requiring an environment variable of `CONNECT_PLUGIN_PATH="/app/libs"`.
 
-When using the `confluent-hub` versions, you can extend those images like so
+When using the `confluent-hub` image tags, you can extend those images like so
 
 ```Dockerfile
 FROM cricketeerone/apache-kafka-connect:latest-confluent-hub
@@ -270,27 +270,27 @@ $ curl localhost:8083/connector-plugins | jq
     {
         "class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
         "type": "sink",
-        "version": "3.4.0"
+        "version": "3.4.1"
     },
     {
         "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
         "type": "source",
-        "version": "3.4.0"
+        "version": "3.4.1"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
         "type": "source",
-        "version": "3.4.0"
+        "version": "3.4.1"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorHeartbeatConnector",
         "type": "source",
-        "version": "3.4.0"
+        "version": "3.4.1"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
         "type": "source",
-        "version": "3.4.0"
+        "version": "3.4.1"
     }
 ]
 ```
@@ -341,7 +341,7 @@ Add environment variables and mounts (`JAVA_TOOL_OPTIONS` comes from Eclipse Tem
 $ curl -w'\n' http://localhost:8083
 User cannot access the resource.
 $ curl -w'\n' -uadmin:OneCricketeer http://localhost:8083
-{"version":"3.4.0","commit":"2e1947d240607d53","kafka_cluster_id":"nA5eYC5WSrSHjaKgw1BpHg"}
+{"version":"3.4.1","commit":"8a516edc2755df89","kafka_cluster_id":"nA5eYC5WSrSHjaKgw1BpHg"}
 ```
 
 ## Maven Details
