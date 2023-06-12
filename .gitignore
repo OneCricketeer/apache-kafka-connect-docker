@@ -6,4 +6,7 @@ target/
 *.iml
 
 lsp/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+
+slim.report.json

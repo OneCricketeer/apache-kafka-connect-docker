@@ -18,6 +18,10 @@ BUILDX_DO_PUSH ?= 1
 MVN_BUILD_CMD ?= compile jib:build
 MAVEN = ./mvnw -B --errors --file pom.xml clean $(MVN_BUILD_CMD)
 
+# ref. https://github.com/slimtoolkit/slim
+SLIM_COMPOSE = --compose-file ./docker-compose.yml --target-compose-svc connect-jib-1
+SLIM_PROBES = --expose 8083 --http-probe-ports=8083 --http-probe-cmd / --http-probe-cmd /connector-plugins --http-probe-cmd /connectors
+
 # Supports arm64; builds and pushes. Refer blog above for setup
 # Requires 'docker login'
 ifneq (,$(findstring arm64,$(BUILDX_PLATFORMS)))
@@ -42,7 +46,15 @@ endif
 build:  # default machine architecture build
 	@$(MAVEN)
 build-alpine:
-	@$(MAVEN) -Palpine
+	@$(MAVEN) -Palpine-temurin
+ifeq ($(SLIM_BUILD),1)
+build-slim: build
+	@slim build --show-clogs $(SLIM_COMPOSE) --tag $(DOCKER_FQN):slim $(SLIM_PROBES)
+	@docker tag $(DOCKER_FQN):slim $(DOCKER_FQN):$(VERSION)-slim
+build-alpine-slim: build-alpine
+	@slim build --show-clogs $(SLIM_COMPOSE) --target-compose-svc-image $(DOCKER_FQN):alpine --tag $(DOCKER_FQN):alpine-slim $(SLIM_PROBES)
+	@docker tag $(DOCKER_FQN):alpine-slim $(DOCKER_FQN):$(VERSION)-alpine-slim
+endif
 ifneq (,$(findstring arm64,$(BUILDX_PLATFORMS)))
 build-multi-arch:  # refer pom.xml for built platforms
 	@$(MAVEN) -Pubuntu-multi-arch
@@ -75,3 +87,9 @@ clean:
 	@docker rmi -f $(DOCKER_FQN):alpine-$(DOCKER_TAG_CONFLUENT_HUB)
 	@docker rmi -f $(DOCKER_FQN):$(VERSION)-alpine
 	@docker rmi -f $(DOCKER_FQN):$(VERSION)-alpine-$(DOCKER_TAG_CONFLUENT_HUB)
+ifeq ($(SLIM_BUILD),1)
+	@docker rmi -f $(DOCKER_FQN):slim
+	@docker rmi -f $(DOCKER_FQN):$(VERSION)-slim
+	@docker rmi -f $(DOCKER_FQN):slim-alpine
+	@docker rmi -f $(DOCKER_FQN):$(VERSION)-alpine-slim
+endif
