@@ -19,6 +19,7 @@ MVN_BUILD_CMD ?= compile jib:build
 MAVEN = ./mvnw -B --errors --file pom.xml clean $(MVN_BUILD_CMD)
 
 # ref. https://github.com/slimtoolkit/slim
+SLIM_BUILD_OPTS = --show-clogs --exclude-pattern /tmp
 SLIM_COMPOSE = --compose-file ./docker-compose.yml --target-compose-svc connect-jib-1
 SLIM_PROBES = --expose 8083 --http-probe-ports=8083 --http-probe-cmd / --http-probe-cmd /connector-plugins --http-probe-cmd /connectors
 
@@ -49,10 +50,10 @@ build-alpine:
 	@$(MAVEN) -Palpine-temurin
 ifeq ($(SLIM_BUILD),1)
 build-slim: build
-	@slim build --show-clogs $(SLIM_COMPOSE) --tag $(DOCKER_FQN):slim $(SLIM_PROBES)
+	@slim build $(SLIM_COMPOSE) --tag $(DOCKER_FQN):slim $(SLIM_PROBES) $(SLIM_BUILD_OPTS)
 	@docker tag $(DOCKER_FQN):slim $(DOCKER_FQN):$(VERSION)-slim
 build-alpine-slim: build-alpine
-	@slim build --show-clogs $(SLIM_COMPOSE) --target-compose-svc-image $(DOCKER_FQN):alpine --tag $(DOCKER_FQN):alpine-slim $(SLIM_PROBES)
+	@slim build $(SLIM_COMPOSE) --target-compose-svc-image $(DOCKER_FQN):alpine --tag $(DOCKER_FQN):alpine-slim $(SLIM_PROBES) $(SLIM_BUILD_OPTS)
 	@docker tag $(DOCKER_FQN):alpine-slim $(DOCKER_FQN):$(VERSION)-alpine-slim
 endif
 ifneq (,$(findstring arm64,$(BUILDX_PLATFORMS)))
