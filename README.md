@@ -1,8 +1,8 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
 <!-- Note: Version is listed in URL -->
-[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.4.1?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
-[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.4.1?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.5.1?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.5.1?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
 [![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect)
 
 [![LICENSE](https://img.shields.io/github/license/OneCricketeer/apache-kafka-connect-docker?color=%23ce353d&logo=apache&style=flat-square)](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/master/LICENSE)
@@ -39,7 +39,8 @@ Alpine variants are also available. Check [Docker Hub](https://hub.docker.com/r/
 
 Much like the `confluentinc/cp-kafka-connect` images, this container uses environment variables starting with `CONNECT_`, followed by the Kafka Connect Worker properties to be configured.
 
-For example, these are the bare minimum variables necessary to get a Connect Distributed Server running, but assumes it is connected to Kafka cluster with at least 3 brokers (replication factor for the three topics)
+For example, these are the bare minimum variables necessary to get a Connect Distributed Server running, 
+but assumes it is connected to Kafka cluster with at least 3 brokers (replication factor for the three topics)
 
 ```txt
 CONNECT_BOOTSTRAP_SERVERS
@@ -60,17 +61,18 @@ Looking to build your own image? **tl;dr** - Clone repo, and use `./mvnw clean c
 **Multi-platform builds (buildx)**
 
 By default, with the above commands, an image will be built for a `linux/amd64` Ubuntu-based container.  
-The following builds and pushes multi-platform images to Docker Hub via Docker Buildx.
+The following builds and pushes multi-platform images to your personal Docker Hub account via Docker Buildx.
 
 ```sh
-BUILDX_PLATFORMS=linux/arm64,linux/amd64 make
+BUILDX_PLATFORMS=linux/arm64,linux/amd64 DOCKER_USER=$(whoami) make
 ```
 
 As of May 2023, Alpine variants of Eclipse Temurin images do not support `arm64`.
 
 ## Push to a private registry
 
-To push to a private Docker Registry, you'll need to `docker login` to that address. The following commands will push the `apache-kafka-connect` image to a Docker Registry under your local username. Feel free to change `DOCKER_USER` to a custom repo name in the Registry.
+To push to a private Docker Registry, you'll need to `docker login` to that address. The following commands will push the `apache-kafka-connect` image to a Docker Registry under your local username.
+Feel free to change `DOCKER_USER` to a custom repo name in the Registry.
 
 ```sh
 $ docker login <registry-address> --username=$(whoami)
@@ -81,13 +83,16 @@ $ DOCKER_REGISTRY=<registry-address> DOCKER_USER=$(whoami) \
 
 ## Tutorial
 
-The following tutorial uses Jib to package `ConnectDistributed` class for running Kafka Connect Distributed mode workers. The following instructions use the [Bitnami](https://github.com/bitnami/bitnami-docker-kafka) Kafka images, however any other Kafka Docker images should work.
+The following tutorial uses Jib to package `ConnectDistributed` class for running Kafka Connect Distributed mode workers. 
+The following instructions use the [Bitnami](https://github.com/bitnami/bitnami-docker-kafka) Kafka images, however any other Kafka Docker images should work.
 
-This tutorial will roughly follow the same steps as the [tutorial for Connect on Kafka's site](https://kafka.apache.org/documentation/#quickstart_kafkaconnect), except using the Distributed Connect server instead.
+This tutorial will roughly follow the same steps as the [tutorial for Connect on Kafka's site](https://kafka.apache.org/documentation/#quickstart_kafkaconnect), 
+except using the Distributed Connect server instead.
 
 ### Without Docker
 
-If not using Docker, Kafka (and ZooKeeper, if not using Kraft) can be started locally using their respective start scripts. If this is done, though, the variables for the bootstrap servers will need to be adjusted accordingly.
+If not using Docker, Kafka (and ZooKeeper, if not using Kraft) can be started locally using their respective start scripts. 
+If this is done, though, the variables for the bootstrap servers will need to be adjusted accordingly.
 
 The following steps can be used to run this application locally outside of Docker.
 
@@ -203,7 +208,9 @@ connect-jib_1  | Struct{line=,partition=1}
 connect-jib_1  | Struct{line=Nullam mauris sapien, vestibulum ....,partition=1}
 ```
 
-This is the `toString()` representation of Kafka Connect's internal `Struct` class. Since we added a `HoistField$Value` transform, then there is a Structured Object with a field of `line` set to the value of the Kafka message that was read from the lines of the `lipsum.txt` file that was produced in the third step above, as well as a `partition` field set to the consumed record partition. The topic was only created with one partition.
+This is the `toString()` representation of Kafka Connect's internal `Struct` class. Since we added a `HoistField$Value` transform, 
+then there is a Structured Object with a field of `line` set to the value of the Kafka message that was read from the lines of the `lipsum.txt` file that was produced in the third step above, 
+as well as a `partition` field set to the consumed record partition. The topic was only created with one partition.
 
 To repeat that process, we delete the connector and reset the consumer group.
 
@@ -220,7 +227,8 @@ Re-run above console-producer and `curl -XPUT ...` command, but this time, there
 
 ### Scaling up
 
-Redo the tutorial with a new topic having more than one partition. Produce more input data to it, then increase `max.tasks` of the connector. Notice that the `partition` field in the output may change (you may need to produce data multiple times to randomize the record batches).
+Redo the tutorial with a new topic having more than one partition. Produce more input data to it, then increase `max.tasks` of the connector. 
+Notice that the `partition` field in the output may change (you may need to produce data multiple times to randomize the record batches).
 
 ### Scaling out
 
@@ -237,7 +245,8 @@ connect-jib-2:
         CONNECT_REST_ADVERTISED_HOST_NAME: connect-jib-2
 ```
 
-A reverse proxy should be added in front of all instances. See an example using Træfik in [`docker-compose.cluster.yml`](./docker-compose.cluster.yml). It can be ran via `docker compose -f docker-compose.cluster.yml up` and tested with `curl -H Host:connect-jib.docker.localhost http://127.0.0.1/`.
+A reverse proxy should be added in front of all instances. See an example using Traefik in [`docker-compose.cluster.yml`](./docker-compose.cluster.yml). 
+It can be started via `docker compose -f docker-compose.cluster.yml up` and tested with `curl -H Host:connect-jib.docker.localhost http://127.0.0.1/`.
 
 ## Extending with new Connectors
 
@@ -256,11 +265,14 @@ RUN confluent-hub install --no-prompt \
     <connector-id>
 ```
 
-Where `<connector-id>` is copied from one of the available sources on [Confluent Hub](https://www.confluent.io/hub/). There is no guarantee in compatibility with the Kafka Connect base version and any version of a plugin that you install.
+Where `<connector-id>` is copied from one of the available sources on [Confluent Hub](https://www.confluent.io/hub/). 
+There is no guarantee in compatibility with the Kafka Connect base version and any version of a plugin that you install.
 
-To re-iterate, `confluent-hub` is **not** part of the base image versions; they **only include** Connector classes provided by Apache Kafka. These are limited to File Sink/Source and MirrorSource Connector (MirrorMaker 2.0). In general, you'll probably want to add your own Connectors, as above, rather than use this image by itself.
+To re-iterate, `confluent-hub` is **not** part of the base image versions; they **only include** Connector classes provided by Apache Kafka. 
+These are limited to File Sink/Source and MirrorSource Connector (MirrorMaker 2.0). In general, you'll probably want to add your own Connectors, as above, rather than use this image by itself.
 
-For a full example of adding plugins, and using the [Confluent Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html), please [refer to the `schema-registry` branch](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/schema-registry/Dockerfile.schema-registry).
+For a full example of adding plugins, and using the [Confluent Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html), 
+please [refer to the `schema-registry` branch](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/schema-registry/Dockerfile.schema-registry).
 
 #### Default Plugins
 
@@ -270,32 +282,33 @@ $ curl localhost:8083/connector-plugins | jq
     {
         "class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
         "type": "sink",
-        "version": "3.4.1"
+        "version": "3.5.1"
     },
     {
         "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
         "type": "source",
-        "version": "3.4.1"
+        "version": "3.5.1"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
         "type": "source",
-        "version": "3.4.1"
+        "version": "3.5.1"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorHeartbeatConnector",
         "type": "source",
-        "version": "3.4.1"
+        "version": "3.5.1"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
         "type": "source",
-        "version": "3.4.1"
+        "version": "3.5.1"
     }
 ]
 ```
 
-The File Source/Sink are **not** to be used in production, and is only really meant as a "simple, standalone example," [according to the docs](https://kafka.apache.org/documentation/#connect_developing) (emphasis added).
+The File Source/Sink are **not** to be used in production, 
+and is only really meant as a "simple, standalone example," [according to the docs](https://kafka.apache.org/documentation/#connect_developing) (emphasis added).
 
 > A _simple **example**_ is included with the source code for Kafka in the `file` package. This connector is **_meant for use in standalone mode_**
 >
@@ -341,7 +354,7 @@ Add environment variables and mounts (`JAVA_TOOL_OPTIONS` comes from Eclipse Tem
 $ curl -w'\n' http://localhost:8083
 User cannot access the resource.
 $ curl -w'\n' -uadmin:OneCricketeer http://localhost:8083
-{"version":"3.4.1","commit":"8a516edc2755df89","kafka_cluster_id":"nA5eYC5WSrSHjaKgw1BpHg"}
+{"version":"3.5.1","commit":"2c6fb6c54472e90a","kafka_cluster_id":"nA5eYC5WSrSHjaKgw1BpHg"}
 ```
 
 ## Maven Details

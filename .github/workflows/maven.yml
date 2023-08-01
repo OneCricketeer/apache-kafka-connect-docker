@@ -11,6 +11,8 @@ jobs:
   deploy:
     if: github.repository == 'OneCricketeer/apache-kafka-connect-docker'
     runs-on: ubuntu-latest
+    env:
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64
     steps:
       - uses: actions/checkout@v3
 
@@ -26,18 +28,20 @@ jobs:
           username: cricketeerone
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      -
-        name: Set up QEMU
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
-      -
-        name: Set up Docker Buildx
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: $BUILDX_PLATFORMS
 
-      - name: Build & Push (alpine)
-        run: BUILDX_PLATFORMS=linux/amd64,linux/arm64 make buildx-confluent-hub-alpine
+#      - name: Build & Push (ubuntu)
+#        run: make
 
-      # override :latest tag created in previous step
-      - name: Build & Push
-        run: BUILDX_PLATFORMS=linux/arm64,linux/amd64 make
+      - name: Build & Push - Alpine
+        run: make buildx-confluent-hub-alpine
+
+      # overrides 'latest' tag created in previous step
+      - name: Build & Push - Ubuntu (override latest)
+        run: make
