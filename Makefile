@@ -45,7 +45,7 @@ build-alpine:
 	@$(MAVEN) -Palpine
 ifneq (,$(findstring arm64,$(BUILDX_PLATFORMS)))
 build-multi-arch:  # refer pom.xml for built platforms
-	@$(MAVEN) -Pubuntu-multi-arch
+	@$(MAVEN) -Pubuntu,ubuntu-multi-arch
 build-multi-arch-alpine:  # refer pom.xml for built platforms
 	@$(MAVEN) -Palpine-multi-arch
 endif
