@@ -1,6 +1,6 @@
 version: '3'
 
-x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.4.1
+x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.5.1
 
 x-connect: &connect-vars
   CONNECT_BOOTSTRAP_SERVERS: kafka:29092
@@ -27,13 +27,13 @@ x-connect: &connect-vars
 
 services:
   kafka:
-    image: bitnami/kafka:3.4.1
+    image: bitnami/kafka:3.5.1
     restart: unless-stopped
     ports:
       - '9092:9092'
     volumes:
       - 'kafka_data:/bitnami/kafka'
-      - $PWD/bitnami-kraft-libkafka.sh:/opt/bitnami/scripts/libkafka.sh:ro # HOTFIX
+#      - $PWD/bitnami-kraft-libkafka.sh:/opt/bitnami/scripts/libkafka.sh:ro # HOTFIX
       - $PWD/lipsum.txt:/data/lipsum.txt:ro  # Some data to produce
     environment:
       BITNAMI_DEBUG: yes

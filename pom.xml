@@ -5,7 +5,7 @@
 
     <groupId>cricket.jmoore</groupId>
     <artifactId>kafka-connect-docker</artifactId>
-    <version>3.4.1</version>
+    <version>3.5.1</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -15,7 +15,7 @@
         <maven.compiler.target>17</maven.compiler.target>
 
         <kafka.version>${project.version}</kafka.version>
-        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/3.4.1/gradle/dependencies.gradle -->
+        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/3.5.1/gradle/dependencies.gradle -->
         <jetty.version>9.4.51.v20230217</jetty.version>
         <jersey.version>2.39.1</jersey.version>
         <jackson.version>2.13.5</jackson.version>
@@ -25,7 +25,7 @@
         <log4j2.version>2.20.0</log4j2.version> <!-- Replace reload4j -->
 
         <!-- Tests -->
-        <junit.version>5.9.3</junit.version>
+        <junit.version>5.10.0</junit.version>
         <assertj.version>3.24.2</assertj.version>
 
         <!-- Packaging -->
@@ -279,7 +279,7 @@
                         <container>
                             <mainClass>${mainClass}</mainClass>
                             <jvmFlags>
-                                <!-- https://github.com/apache/kafka/blob/3.4.1/bin/kafka-run-class.sh#L282 -->
+                                <!-- https://github.com/apache/kafka/blob/3.5.1/bin/kafka-run-class.sh#L282 -->
                                 <jvmFlag>-server</jvmFlag>
                                 <jvmFlag>-XX:+UseG1GC</jvmFlag>
                                 <jvmFlag>-XX:MaxGCPauseMillis=20</jvmFlag>
