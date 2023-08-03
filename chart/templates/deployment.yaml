@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kafka-connect.fullname" . }}
+  labels:
+    {{- include "kafka-connect.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "kafka-connect.selectorLabels" . | nindent 6 }}
+  {{- with .Values.deploymentStrategy }}
+  strategy:
+    {{- toYaml . | trim | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "kafka-connect.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "kafka-connect.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          {{- if .Values.jmx.enabled }}
+          - containerPort: {{ .Values.jmx.port }}
+            name: jmx
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml .Values.volumeMounts | nindent 12 }}
+          {{- end }}
+          env:
+            - name: CONNECT_REST_ADVERTISED_HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: CONNECT_BOOTSTRAP_SERVERS
+              value: {{ required "The bootstrapServers cannot be empty." .Values.bootstrapServers }}
+            - name: CONNECT_GROUP_ID
+              value: {{ required "The groupId cannot be empty." .Values.groupId }}
+            - name: CONNECT_CONFIG_STORAGE_TOPIC
+              value: {{ template "kafka-connect.fullname" . }}-config
+            - name: CONNECT_OFFSET_STORAGE_TOPIC
+              value: {{ template "kafka-connect.fullname" . }}-offset
+            - name: CONNECT_STATUS_STORAGE_TOPIC
+              value: {{ template "kafka-connect.fullname" . }}-status
+            - name: KAFKA_HEAP_OPTS
+              value: "{{ .Values.heapOptions }}"
+            {{- range $key, $value := .Values.configurationOverrides }}
+            - name: {{ printf "CONNECT_%s" $key | replace "." "_" | upper | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range $key, $value := .Values.envValueFrom }}
+              - name: {{ $key | quote }}
+                valueFrom:
+                  {{- tpl (toYaml $value) $ | nindent 10 }}
+            {{- end }}
+            {{- range $key, $value := .Values.customEnv }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- if .Values.jmx.port }}
+            - name: KAFKA_JMX_PORT
+              value: "{{ .Values.jmx.port }}"
+            {{- end }}
+          {{- if or .Values.envFromSecret (or .Values.envRenderSecret .Values.envFromSecrets) }}
+          envFrom:
+            {{- if .Values.envFromSecret }}
+            - secretRef:
+                name: {{ tpl .Values.envFromSecret . }}
+            {{- end }}
+            {{- if .Values.envRenderSecret }}
+            - secretRef:
+                name: {{ include "kafka-connect.fullname" . }}-env
+            {{- end }}
+            {{- range .Values.envFromSecrets }}
+            - secretRef:
+                name: {{ tpl .name $ }}
+                optional: {{ .optional | default false }}
+            {{- end }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

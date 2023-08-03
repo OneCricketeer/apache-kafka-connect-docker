@@ -1,0 +1,143 @@
+global:
+  imagePullSecrets: []
+
+# Default values for kafka-connect
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: cricketeerone/apache-kafka-connect
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+## See `kubectl explain deployment.spec.strategy` for more
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+deploymentStrategy:
+  type: RollingUpdate
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8083
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+## List of volumeMounts for connect server container
+## ref: https://kubernetes.io/docs/concepts/storage/volumes/
+volumeMounts:
+# - name: credentials
+#   mountPath: /etc/creds-volume
+
+## List of volumeMounts for connect server container
+## ref: https://kubernetes.io/docs/concepts/storage/volumes/
+volumes:
+# - name: credentials
+#   secret:
+#     secretName: creds
+
+## Kafka Connect JVM Heap Option
+heapOptions: "-Xms512M -Xmx512M"
+
+## Kafka Connect properties
+## ref: https://kafka.apache.org/documentation/#connectconfigs
+
+# bootstrapServers defines the Kafka bootstrap.servers to connect to
+bootstrapServers: ""
+# groupId sets the Kafka Connect cluster group.id
+groupId: ""
+# configurationOverrides defines additional connect-distributed.properties files
+configurationOverrides:
+  "plugin.path": "/app/libs"
+  "key.converter": "org.apache.kafka.connect.converters.ByteArrayConverter"
+  "value.converter": "org.apache.kafka.connect.converters.ByteArrayConverter"
+  "config.storage.replication.factor": "3"
+  "offset.storage.replication.factor": "3"
+  "status.storage.replication.factor": "3"
+
+jmx:
+  enabled: false
+  port: 5555
+
+## Additional env variables
+customEnv: {}
+
+## "valueFrom" environment variable references that will be added to deployment pods. Name is templated.
+## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#envvarsource-v1-core
+## Renders in container spec as:
+##   env:
+##     ...
+##     - name: <key>
+##       valueFrom:
+##         <value rendered as YAML>
+envValueFrom: {}
+  #  ENV_NAME:
+  #    configMapKeyRef:
+  #      name: configmap-name
+  #      key: value_key
+
+## The name of a secret in the same kubernetes namespace which contain values to be added to the environment
+## This can be useful for auth tokens, etc. Value is templated.
+envFromSecret: ""
+
+## Sensible environment variables that will be rendered as new secret object
+## This can be useful for auth tokens, etc.
+## If the secret values contains "{{", they'll need to be properly escaped so that they are not interpreted by Helm
+## ref: https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function
+envRenderSecret: {}
+
+## The names of secrets in the same kubernetes namespace which contain values to be added to the environment
+## Each entry should contain a name key, and can optionally specify whether the secret must be defined with an optional key.
+## Name is templated.
+envFromSecrets: []
+## - name: secret-name
+##   optional: true
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

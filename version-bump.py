@@ -21,6 +21,9 @@ def docker_compose(old, new, preserve=lambda s: s.endswith('# hold-version')):
     bump('docker-compose.yml', old, new, preserve)
     bump('docker-compose.cluster.yml', old, new, preserve)
 
+ def helm(old, new, preserve: lambda s: s.endswith('# hold-version'):
+    bump('chart/kafka-connect/Chart.yaml', old, new, preserve)
+
 parser = argparse.ArgumentParser(description='Version bumper')
 
 pom_tree = ET.parse('pom.xml')
