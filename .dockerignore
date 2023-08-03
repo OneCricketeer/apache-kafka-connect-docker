@@ -20,3 +20,7 @@ docker-compose.*.yml
 LICENSE
 *.txt
 *.md
+
+*.py
+
+chart/
