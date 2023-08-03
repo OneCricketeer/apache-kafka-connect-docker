@@ -40,7 +40,6 @@ services:
     restart: unless-stopped
     volumes:
       - 'kafka_controller_data:/bitnami/kafka'
-      - $PWD/bitnami-kraft-libkafka.sh:/opt/bitnami/scripts/libkafka.sh:ro # HOTFIX
     environment:
       <<: *kraft-vars
       KAFKA_CFG_PROCESS_ROLES: controller
@@ -56,7 +55,6 @@ services:
       - kafka-controller
     volumes:
       - 'kafka_data:/bitnami/kafka'
-      - $PWD/bitnami-kraft-libkafka.sh:/opt/bitnami/scripts/libkafka.sh:ro # HOTFIX
       - $PWD/lipsum.txt:/data/lipsum.txt:ro  # Some data to produce
     ports:
       - 9092:9092

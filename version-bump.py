@@ -1,6 +1,6 @@
 import argparse, xml.etree.ElementTree as ET
 
-def bump(filename, old, new, preserve=None):
+def __bump(filename, old, new, preserve=None):
     lines = []
     with open(filename, 'r') as f:
         for line in f:
@@ -11,18 +11,25 @@ def bump(filename, old, new, preserve=None):
         for line in lines:
             f.write(line)
 
-def pom(old, new, preserve=lambda s: s.endswith('<!-- hold-version -->')):
-    bump('pom.xml', old, new, preserve)
+def __bump_xhtml(filename, old, new):
+    __bump(filename, old, new, preserve=lambda s: s.endswith('<!-- hold-version -->'))
 
-def readme(old, new, preserve=lambda s: s.endswith('<!-- hold-version -->')):
-    bump('README.md', old, new, preserve)
+def __bump_yaml(filename, old, new):
+    __bump(filename, old, new, preserve=lambda s: s.endswith('# hold-version'))
 
-def docker_compose(old, new, preserve=lambda s: s.endswith('# hold-version')):
-    bump('docker-compose.yml', old, new, preserve)
-    bump('docker-compose.cluster.yml', old, new, preserve)
+def pom(old, new):
+    __bump_xhtml('pom.xml', old, new)
 
- def helm(old, new, preserve: lambda s: s.endswith('# hold-version'):
-    bump('chart/kafka-connect/Chart.yaml', old, new, preserve)
+def readme(old, new):
+    __bump_xhtml('README.md', old, new)
+
+def docker_compose(old, new):
+    __bump_yaml('docker-compose.yml', old, new)
+    __bump_yaml('docker-compose.cluster.yml', old, new)
+
+def helm(old, new):
+    __bump_yaml('chart/Chart.yaml', old, new)
+    __bump_xhtml('chart/README.md', old, new)
 
 parser = argparse.ArgumentParser(description='Version bumper')
 
@@ -36,5 +43,5 @@ args = parser.parse_args()
 if not args.new:
     raise ValueError('missing new version argument')
 
-for f in [pom, readme, docker_compose]:
+for f in [pom, readme, docker_compose, helm]:
     f(args.old, args.new)

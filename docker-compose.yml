@@ -33,7 +33,6 @@ services:
       - '9092:9092'
     volumes:
       - 'kafka_data:/bitnami/kafka'
-#      - $PWD/bitnami-kraft-libkafka.sh:/opt/bitnami/scripts/libkafka.sh:ro # HOTFIX
       - $PWD/lipsum.txt:/data/lipsum.txt:ro  # Some data to produce
     environment:
       BITNAMI_DEBUG: yes

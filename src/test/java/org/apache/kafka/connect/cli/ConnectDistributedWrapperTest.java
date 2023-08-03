@@ -4,6 +4,7 @@ import org.apache.kafka.common.utils.Utils;
 import org.apache.kafka.connect.converters.ByteArrayConverter;
 import org.apache.kafka.connect.runtime.WorkerConfig;
 import org.apache.kafka.connect.runtime.distributed.DistributedConfig;
+import org.apache.kafka.connect.runtime.rest.RestServerConfig;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -70,8 +71,8 @@ class ConnectDistributedWrapperTest implements WithAssertions {
                 WorkerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 DistributedConfig.GROUP_ID_CONFIG,
                 // REST server
-                WorkerConfig.REST_ADVERTISED_LISTENER_CONFIG,
-                WorkerConfig.LISTENERS_CONFIG,
+                RestServerConfig.REST_ADVERTISED_LISTENER_CONFIG,
+                RestServerConfig.LISTENERS_CONFIG,
                 // Plugins
                 WorkerConfig.PLUGIN_PATH_CONFIG,
                 // Converters
