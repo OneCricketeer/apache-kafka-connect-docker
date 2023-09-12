@@ -9,19 +9,31 @@
 
 Using [GoogleContainerTools/Jib](https://github.com/GoogleContainerTools/jib) to package Apache Kafka Connect Distributed Server.
 
+### FAQ 
+
+#### Why this image over others?
+
+This image is almost 10x **_smaller_** than popular Kafka Connect images. It only includes the Connect Runtime, no extra bloat!
+
+#### When will version _X_ be available? 
+
+The builds are automated. The version releases are not. If you find a version missing, feel free to submit a corresponding PR.
+
+---
+
 Docker Pull! 🐳
 
 ```sh
 docker pull cricketeerone/apache-kafka-connect
 ```
 
-There is also an image that includes `confluent-hub`!
+The above image is enough for MirrorMaker2. There is also an image that includes `confluent-hub` for adding a majority of third-party connectors! See section [Extending with new Connectors](#extending-with-new-connectors) for full usage.
 
 ```sh
 docker pull cricketeerone/apache-kafka-connect:latest-confluent-hub
 ```
 
-Alpine variants are also available. Check [Docker Hub](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags).
+Alpine variants are also available. Check [Docker Hub](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags) for all tags and versions.
 
 **Table of Contents**
 - [Image Details](#image-details)
@@ -40,7 +52,9 @@ Alpine variants are also available. Check [Docker Hub](https://hub.docker.com/r/
 Much like the `confluentinc/cp-kafka-connect` images, this container uses environment variables starting with `CONNECT_`, followed by the Kafka Connect Worker properties to be configured.
 
 For example, these are the bare minimum variables necessary to get a Connect Distributed Server running, 
-but assumes it is connected to Kafka cluster with at least 3 brokers (replication factor for the three topics)
+but assumes it is connected to Kafka cluster with at least three brokers (replication factor for the three Connect topics). 
+Additional variables for replication factor of the three Connect topics can be added, as described below for 
+testing against less than three brokers.
 
 ```txt
 CONNECT_BOOTSTRAP_SERVERS
