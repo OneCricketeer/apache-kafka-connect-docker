@@ -1,6 +1,6 @@
 version: '3'
 
-x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.5.1
+x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.6.0
 
 x-connect: &connect-vars
   CONNECT_BOOTSTRAP_SERVERS: kafka:29092
@@ -36,11 +36,10 @@ x-kraft: &kraft-vars
 
 services:
   kafka-controller:
-    image: &kafka-image bitnami/kafka:3.5.1
+    image: &kafka-image bitnami/kafka:3.6.0
     restart: unless-stopped
     volumes:
       - 'kafka_controller_data:/bitnami/kafka'
-      - $PWD/bitnami-kraft-libkafka.sh:/opt/bitnami/scripts/libkafka.sh:ro # HOTFIX
     environment:
       <<: *kraft-vars
       KAFKA_CFG_PROCESS_ROLES: controller

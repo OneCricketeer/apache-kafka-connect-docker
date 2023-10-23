@@ -89,7 +89,7 @@ spec:
             - name: {{ $key | quote }}
               value: {{ $value | quote }}
             {{- end }}
-            {{- if .Values.jmx.port }}
+            {{- if and .Values.jmx.enabled .Values.jmx.port }}
             - name: KAFKA_JMX_PORT
               value: "{{ .Values.jmx.port }}"
             {{- end }}
