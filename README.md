@@ -1,8 +1,8 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
 <!-- Note: Version is listed in URL -->
-[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.5.1?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
-[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.5.1?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.6.0?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.6.0?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
 [![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect)
 
 [![LICENSE](https://img.shields.io/github/license/OneCricketeer/apache-kafka-connect-docker?color=%23ce353d&logo=apache&style=flat-square)](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/master/LICENSE)
@@ -81,7 +81,7 @@ The following builds and pushes multi-platform images to your personal Docker Hu
 BUILDX_PLATFORMS=linux/arm64,linux/amd64 DOCKER_USER=$(whoami) make
 ```
 
-As of May 2023, Alpine variants of Eclipse Temurin images do not support `arm64`.
+As of May 2023, Alpine variants of Eclipse Temurin Java 17 images do not support `arm64`.
 
 ## Push to a private registry
 
@@ -217,9 +217,9 @@ This will read from the beginning of the `input` topic that had data sent into i
 In the output of _Terminal 2_, you should see something similar to the following.
 
 ```text
-connect-jib_1  | Struct{line=Morbi eu pharetra dolor. ....,partition=1}
-connect-jib_1  | Struct{line=,partition=1}
-connect-jib_1  | Struct{line=Nullam mauris sapien, vestibulum ....,partition=1}
+connect-jib_1  | Struct{line=Morbi eu pharetra dolor. ....,partition=0}
+connect-jib_1  | Struct{line=,partition=0}
+connect-jib_1  | Struct{line=Nullam mauris sapien, vestibulum ....,partition=0}
 ```
 
 This is the `toString()` representation of Kafka Connect's internal `Struct` class. Since we added a `HoistField$Value` transform, 
@@ -266,14 +266,14 @@ It can be started via `docker compose -f docker-compose.cluster.yml up` and test
 
 > ***Disclaimer***  It is best to think of this image as a base upon which you can add your own Connectors. Below is the output of the default connector plugins, as provided by Apache Kafka project.
 
-Connector plugins should preferably be placed into `/app/libs`, thus requiring an environment variable of `CONNECT_PLUGIN_PATH="/app/libs"`.
+Connector plugins should preferably be placed into `/app/libs`, thus requiring an environment variable of `CONNECT_PLUGIN_PATH="/app/libs"`. Kafka Connect plugins are often distributed as Tarballs/ZIP/JAR files that need to be extracted or added to this path, via a volume mount or downloaded with `curl`.
 
 When using the `confluent-hub` image tags, you can extend those images like so
 
 ```Dockerfile
 FROM cricketeerone/apache-kafka-connect:latest-confluent-hub
 
-# Example connector installation
+# Example connector installation from Confluent Hub
 RUN confluent-hub install --no-prompt \
     --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
     <connector-id>
@@ -284,6 +284,8 @@ There is no guarantee in compatibility with the Kafka Connect base version and a
 
 To re-iterate, `confluent-hub` is **not** part of the base image versions; they **only include** Connector classes provided by Apache Kafka. 
 These are limited to File Sink/Source and MirrorSource Connector (MirrorMaker 2.0). In general, you'll probably want to add your own Connectors, as above, rather than use this image by itself.
+
+As of 3.6.0 release, the `confluent-hub` tags include `unzip` shell command for extracting other third-party connectors.
 
 For a full example of adding plugins, and using the [Confluent Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html), 
 please [refer to the `schema-registry` branch](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/schema-registry/Dockerfile.schema-registry).
@@ -296,27 +298,27 @@ $ curl localhost:8083/connector-plugins | jq
     {
         "class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
         "type": "sink",
-        "version": "3.5.1"
+        "version": "3.6.0"
     },
     {
         "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
         "type": "source",
-        "version": "3.5.1"
+        "version": "3.6.0"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
         "type": "source",
-        "version": "3.5.1"
+        "version": "3.6.0"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorHeartbeatConnector",
         "type": "source",
-        "version": "3.5.1"
+        "version": "3.6.0"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
         "type": "source",
-        "version": "3.5.1"
+        "version": "3.6.0"
     }
 ]
 ```
@@ -368,7 +370,7 @@ Add environment variables and mounts (`JAVA_TOOL_OPTIONS` comes from Eclipse Tem
 $ curl -w'\n' http://localhost:8083
 User cannot access the resource.
 $ curl -w'\n' -uadmin:OneCricketeer http://localhost:8083
-{"version":"3.5.1","commit":"2c6fb6c54472e90a","kafka_cluster_id":"nA5eYC5WSrSHjaKgw1BpHg"}
+{"version":"3.6.0","commit":"60e845626d8a465a","kafka_cluster_id":"nA5eYC5WSrSHjaKgw1BpHg"}
 ```
 
 ## Maven Details

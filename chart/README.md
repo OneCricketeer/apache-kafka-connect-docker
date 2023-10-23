@@ -1,6 +1,6 @@
 # Kafka Connect Helm Chart
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square&logo=helm) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square&logo=helm) ![AppVersion: 3.5.1](https://img.shields.io/badge/AppVersion-3.5.1-informational?style=flat-square&logo=docker)
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square&logo=helm) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square&logo=helm) ![AppVersion: 3.6.0](https://img.shields.io/badge/AppVersion-3.6.0-informational?style=flat-square&logo=docker)
 
 A Helm chart for Apache Kafka Connect on Kubernetes
 
@@ -67,7 +67,7 @@ Otherwise, there are a few other ways to supply configuration
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| heapOptions | string | `"-Xms512M -Xmx512M"` |  |
+| heapOptions | string | `"-Xms256M -Xmx2G"` | JVM Heap Options |
 
 Use `KAFKA_JMX_OPTS` or `KAFKA_OPTS` in `customEnv` to set arbitrary values.
 

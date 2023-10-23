@@ -4,6 +4,7 @@ FROM cricketeerone/apache-kafka-connect:latest
 RUN apt-get -y update && apt-get install -y \
     ca-certificates \
     curl \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Confluent Hub CLI

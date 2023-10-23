@@ -1,4 +1,5 @@
-import argparse, xml.etree.ElementTree as ET
+import argparse
+import xml.etree.ElementTree as ET
 
 def __bump(filename, old, new, preserve=None):
     lines = []
@@ -41,6 +42,7 @@ parser.add_argument('--new', help='New Version')
 args = parser.parse_args()
 
 if not args.new:
+    parser.print_help()
     raise ValueError('missing new version argument')
 
 for f in [pom, readme, docker_compose, helm]:

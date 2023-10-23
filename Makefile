@@ -42,7 +42,7 @@ endif
 build:  # default machine architecture build
 	@$(MAVEN)
 build-alpine:
-	@$(MAVEN) -Palpine
+	@$(MAVEN) -Palpine-temurin
 ifneq (,$(findstring arm64,$(BUILDX_PLATFORMS)))
 build-multi-arch:  # refer pom.xml for built platforms
 	@$(MAVEN) -Pubuntu,ubuntu-multi-arch

@@ -1,10 +1,6 @@
 global:
   imagePullSecrets: []
 
-# Default values for kafka-connect
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
 replicaCount: 1
 
 image:
@@ -73,7 +69,7 @@ volumes:
 #     secretName: creds
 
 ## Kafka Connect JVM Heap Option
-heapOptions: "-Xms512M -Xmx512M"
+heapOptions: "-Xms256M -Xmx2G"
 
 ## Kafka Connect properties
 ## ref: https://kafka.apache.org/documentation/#connectconfigs

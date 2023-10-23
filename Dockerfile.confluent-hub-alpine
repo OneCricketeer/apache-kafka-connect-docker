@@ -4,6 +4,7 @@ FROM cricketeerone/apache-kafka-connect:alpine
 RUN apk update && apk add --no-cache \
     ca-certificates \
     curl \
+    unzip \
     bash
 
 # Install Confluent Hub CLI
