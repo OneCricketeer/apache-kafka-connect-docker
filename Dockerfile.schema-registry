@@ -1,16 +1,18 @@
 FROM cricketeerone/apache-kafka-connect:latest-confluent-hub
 
-ARG CONFLUENT_VERSION_AVRO=7.2.3
-ARG CONFLUENT_VERSION_PROTO=7.2.3
-# BUG: Missing a release? - https://www.confluent.io/hub/confluentinc/kafka-connect-json-schema-converter
-ARG CONFLUENT_VERSION_JSON=7.2.2
+# https://www.confluent.io/hub/confluentinc/kafka-connect-avro-converter
+ARG CONFLUENT_VERSION_AVRO=7.5.1
+# https://www.confluent.io/hub/confluentinc/kafka-connect-protobuf-converter
+ARG CONFLUENT_VERSION_PROTO=7.5.1
+# https://www.confluent.io/hub/confluentinc/kafka-connect-json-schema-converter
+ARG CONFLUENT_VERSION_JSON=7.5.1
 
 RUN confluent-hub install --no-prompt \
     --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
-	confluentinc/kafka-connect-avro-converter:${CONFLUENT_VERSION_AVRO} \
- && confluent-hub install --no-prompt \
+      confluentinc/kafka-connect-avro-converter:${CONFLUENT_VERSION_AVRO} \
+  && confluent-hub install --no-prompt \
     --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
-    confluentinc/kafka-connect-protobuf-converter:${CONFLUENT_VERSION_PROTO} \
- && confluent-hub install --no-prompt \
+      confluentinc/kafka-connect-protobuf-converter:${CONFLUENT_VERSION_PROTO} \
+  && confluent-hub install --no-prompt \
     --component-dir /app/libs --worker-configs /app/resources/connect-distributed.properties -- \
-    confluentinc/kafka-connect-json-schema-converter:${CONFLUENT_VERSION_JSON}
+      confluentinc/kafka-connect-json-schema-converter:${CONFLUENT_VERSION_JSON}
