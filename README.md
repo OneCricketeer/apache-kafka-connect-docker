@@ -1,8 +1,8 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
 <!-- Note: Version is listed in URL -->
-[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/3.9.0?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
-[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/3.9.0?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/4.0.0?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/4.0.0?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
 [![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect)
 
 [![LICENSE](https://img.shields.io/github/license/OneCricketeer/apache-kafka-connect-docker?color=%23ce353d&logo=apache&style=flat-square)](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/master/LICENSE)
@@ -298,27 +298,27 @@ $ curl localhost:8083/connector-plugins | jq
     {
         "class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
         "type": "sink",
-        "version": "3.9.0"
+        "version": "4.0.0"
     },
     {
         "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
         "type": "source",
-        "version": "3.9.0"
+        "version": "4.0.0"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
         "type": "source",
-        "version": "3.9.0"
+        "version": "4.0.0"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorHeartbeatConnector",
         "type": "source",
-        "version": "3.9.0"
+        "version": "4.0.0"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
         "type": "source",
-        "version": "3.9.0"
+        "version": "4.0.0"
     }
 ]
 ```
@@ -370,7 +370,7 @@ Add environment variables and mounts (`JAVA_TOOL_OPTIONS` comes from Eclipse Tem
 $ curl -w'\n' http://localhost:8083
 User cannot access the resource.
 $ curl -w'\n' -uadmin:OneCricketeer http://localhost:8083
-{"version":"3.9.0","commit":"60e845626d8a465a","kafka_cluster_id":"nA5eYC5WSrSHjaKgw1BpHg"}
+{"version":"4.0.0","commit":"60e845626d8a465a","kafka_cluster_id":"nA5eYC5WSrSHjaKgw1BpHg"}
 ```
 
 ## Maven Details
