@@ -1,6 +1,6 @@
 version: '3'
 
-x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.8.0
+x-connect-image: &connect-image cricketeerone/apache-kafka-connect:3.8.1
 
 x-connect: &connect-vars
   CONNECT_BOOTSTRAP_SERVERS: kafka:29092
@@ -27,7 +27,7 @@ x-connect: &connect-vars
 
 services:
   kafka:
-    image: bitnami/kafka:3.8.0
+    image: bitnami/kafka:3.8.1
     restart: unless-stopped
     ports:
       - '9092:9092'

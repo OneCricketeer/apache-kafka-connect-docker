@@ -1,6 +1,6 @@
 # Kafka Connect Helm Chart
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square&logo=helm) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square&logo=helm) ![AppVersion: 3.8.0](https://img.shields.io/badge/AppVersion-3.8.0-informational?style=flat-square&logo=docker)
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square&logo=helm) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square&logo=helm) ![AppVersion: 3.8.1](https://img.shields.io/badge/AppVersion-3.8.1-informational?style=flat-square&logo=docker)
 
 A Helm chart for Apache Kafka Connect on Kubernetes
 
