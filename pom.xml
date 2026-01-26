@@ -23,7 +23,7 @@
 
         <!-- Tests -->
         <junit.version>5.12.2</junit.version>
-        <assertj.version>3.27.3</assertj.version>
+        <assertj.version>3.27.7</assertj.version>
 
         <!-- Packaging -->
         <mainClass>org.apache.kafka.connect.cli.ConnectDistributedWrapper</mainClass>
