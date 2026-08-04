@@ -1,25 +1,27 @@
 import argparse
 import xml.etree.ElementTree as ET
 
-def __bump(filename, old, new, preserve=None):
+def __bump(filename, old, new, preserve=None, start=0):
+    lineno = 0
     lines = []
     with open(filename, 'r') as f:
         for line in f:
-            if preserve and not preserve(line.rstrip()):
+            if lineno >= start and preserve and not preserve(line.rstrip()):
                 line = line.replace(old, new)
             lines.append(line)
+            lineno += 1
     with open(filename, 'w') as f:
         for line in lines:
             f.write(line)
 
-def __bump_xhtml(filename, old, new):
-    __bump(filename, old, new, preserve=lambda s: s.endswith('<!-- hold-version -->'))
+def __bump_xhtml(filename, old, new, start=0):
+    __bump(filename, old, new, preserve=lambda s: s.endswith('<!-- hold-version -->'), start=start)
 
 def __bump_yaml(filename, old, new):
     __bump(filename, old, new, preserve=lambda s: s.endswith('# hold-version'))
 
 def pom(old, new):
-    __bump_xhtml('pom.xml', old, new)
+    __bump_xhtml('pom.xml', old, new, start=5)
 
 def readme(old, new):
     __bump_xhtml('README.md', old, new)
