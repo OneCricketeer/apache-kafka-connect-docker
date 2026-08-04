@@ -5,7 +5,7 @@
 
     <groupId>cricket.jmoore</groupId>
     <artifactId>kafka-connect-docker</artifactId>
-    <version>4.1.2</version>
+    <version>4.2.1</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -14,9 +14,9 @@
         <maven.compiler.release>21</maven.compiler.release>
 
         <kafka.version>${project.version}</kafka.version>
-        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/4.1.2/gradle/dependencies.gradle -->
-        <jackson.version>2.19.4</jackson.version>
-        <jetty.version>12.0.25</jetty.version>
+        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/4.2.1/gradle/dependencies.gradle -->
+        <jackson.version>2.21.2</jackson.version>
+        <jetty.version>12.0.34</jetty.version>
         <jersey.version>3.1.10</jersey.version>
         <slf4j.version>1.7.36</slf4j.version>
         <log4j2.version>2.26.1</log4j2.version>
@@ -273,7 +273,7 @@
                         <container>
                             <mainClass>${mainClass}</mainClass>
                             <jvmFlags>
-                                <!-- https://github.com/apache/kafka/blob/4.1.2/bin/kafka-run-class.sh#L282 -->
+                                <!-- https://github.com/apache/kafka/blob/4.2.1/bin/kafka-run-class.sh#L282 -->
                                 <jvmFlag>-server</jvmFlag>
                                 <jvmFlag>-XX:+UseG1GC</jvmFlag>
                                 <jvmFlag>-XX:MaxGCPauseMillis=20</jvmFlag>
