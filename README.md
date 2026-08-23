@@ -290,6 +290,68 @@ As of 3.6.0 release, the `confluent-hub` tags include `unzip` shell command for 
 For a full example of adding plugins, and using the [Confluent Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html), 
 please [refer to the `schema-registry` branch](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/schema-registry/Dockerfile.schema-registry).
 
+
+#### Pulling connector JARs from Maven
+
+When a connector (or its dependencies) is published to Maven Central or another
+Maven repository, you can fetch the packaged JARs with Maven's
+[`dependency:copy`](https://maven.apache.org/plugins/maven-dependency-plugin/copy-mojo.html)
+goal and drop them under `/app/libs` so Kafka Connect's plugin classloader
+picks them up (`plugin.path=/app/libs` in the default worker config).
+
+**Build-time (recommended for custom images)** — copy artifacts into the image:
+
+```Dockerfile
+FROM maven:3.9-eclipse-temurin-17 AS deps
+WORKDIR /tmp
+# Example: Debezium PostgreSQL connector (replace GAV coordinates as needed)
+RUN mvn -q org.apache.maven.plugins:maven-dependency-plugin:3.6.1:copy \
+      -Dartifact=io.debezium:debezium-connector-postgres:2.5.4.Final \
+      -DoutputDirectory=/tmp/plugins/debezium-postgres
+
+FROM cricketeerone/apache-kafka-connect:latest
+COPY --from=deps /tmp/plugins/ /app/libs/
+ENV CONNECT_PLUGIN_PATH=/app/libs
+```
+
+**Host-side download then volume-mount** — useful for local iteration without
+rebuilding the image:
+
+```bash
+# Flat layout: JARs under a per-plugin directory
+mkdir -p ./plugins/debezium-postgres
+mvn -q org.apache.maven.plugins:maven-dependency-plugin:3.6.1:copy \
+  -Dartifact=io.debezium:debezium-connector-postgres:2.5.4.Final \
+  -DoutputDirectory=./plugins/debezium-postgres
+
+# Or pull a connector plus transitive runtime deps into the same tree
+mvn -q org.apache.maven.plugins:maven-dependency-plugin:3.6.1:copy-dependencies \
+  -DincludeArtifactIds=debezium-connector-postgres \
+  -DoutputDirectory=./plugins/debezium-postgres
+```
+
+```yaml
+# docker-compose snippet
+services:
+  connect:
+    image: cricketeerone/apache-kafka-connect:latest
+    environment:
+      CONNECT_PLUGIN_PATH: /app/libs
+      # ...other CONNECT_* worker settings...
+    volumes:
+      - ./plugins:/app/libs:ro
+```
+
+Notes:
+
+- Prefer one subdirectory per connector under `/app/libs/<plugin-name>/` so
+  Connect isolates classloaders per plugin (Kafka Connect's recommended layout).
+- Coordinates (`groupId:artifactId:version`) come from the connector's Maven
+  page; some connectors ship an uber-JAR, others need `copy-dependencies`.
+- This path does **not** require the `confluent-hub` image tag. Use
+  `confluent-hub install` only when the connector is published on
+  [Confluent Hub](https://www.confluent.io/hub/).
+
 #### Default Plugins
 
 ```bash
