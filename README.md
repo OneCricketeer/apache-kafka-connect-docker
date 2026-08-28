@@ -377,6 +377,11 @@ $ curl -w'\n' -uadmin:OneCricketeer http://localhost:8083
 
 The `exec:java` goal can be used to run Kafka Connect outside of Docker.
 
+Connect Plugin JARs can also be pulled directly from a Maven repo and placed into the CLASSPATH or a tree structure under `/app/libs/<plugin>`, for example:
+
+```sh
+mvn dependency:copy -Dartifact=<groupId>:<artifactId>:<version> -DoutputDirectory=/app/libs/<plugin>
+
 To rebuild the container, for example, run `./mvnw clean install` or `make`.
 
 ## Cleanup environment
