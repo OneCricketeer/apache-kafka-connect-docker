@@ -132,6 +132,20 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+keda:
+  enabled: false
+  pollingInterval: 30
+  cooldownPeriod: 300
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: ""
+        consumerGroup: ""
+        topic: ""
+        lagThreshold: "50"
+
 nodeSelector: {}
 
 tolerations: []

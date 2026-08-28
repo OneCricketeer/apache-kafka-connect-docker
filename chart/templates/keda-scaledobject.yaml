@@ -1,0 +1,20 @@
+{{- if .Values.keda.enabled }}
+{{- if .Values.autoscaling.enabled }}
+{{- fail "autoscaling.enabled and keda.enabled cannot both be true: they would create two competing autoscalers for the same Deployment" }}
+{{- end }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "kafka-connect.fullname" . }}
+  labels:
+    {{- include "kafka-connect.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ include "kafka-connect.fullname" . }}
+  pollingInterval: {{ .Values.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.keda.cooldownPeriod }}
+  minReplicaCount: {{ .Values.keda.minReplicaCount }}
+  maxReplicaCount: {{ .Values.keda.maxReplicaCount }}
+  triggers:
+    {{- toYaml .Values.keda.triggers | nindent 4 }}
+{{- end }}
