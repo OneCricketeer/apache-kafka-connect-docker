@@ -44,6 +44,7 @@ Alpine variants are also available. Check [Docker Hub](https://hub.docker.com/r/
 - Extra
   - [Scaling Up](#scaling-up)
   - [Scaling Out](#scaling-out)
+  - [Metrics](#metrics)
 - [Extending with new Connectors](#extending-with-new-connectors)
 - [HTTP Authentication](#http-authentication)
 
@@ -261,6 +262,31 @@ connect-jib-2:
 
 A reverse proxy should be added in front of all instances. See an example using Traefik in [`docker-compose.cluster.yml`](./docker-compose.cluster.yml). 
 It can be started via `docker compose -f docker-compose.cluster.yml up` and tested with `curl -H Host:connect-jib.docker.localhost http://127.0.0.1/`.
+
+### Metrics
+
+This image does not ship a metrics collector. Kafka Connect and its internal clients expose JMX; scrape that with [Prometheus JMX Exporter](https://github.com/prometheus/jmx_exporter) (or OpenTelemetry) in a derived image.
+
+Download the Java agent JAR from the [jmx_exporter releases](https://github.com/prometheus/jmx_exporter/releases) and a Kafka Connect scrape config such as [`examples/kafka-connect.yml`](https://github.com/prometheus/jmx_exporter/blob/main/examples/kafka-connect.yml). The Eclipse Temurin base image already honors `JAVA_TOOL_OPTIONS`.
+
+Example multi-stage image:
+
+```Dockerfile
+ARG JMX_EXPORTER_VERSION=1.6.0
+
+FROM eclipse-temurin:21-jre-jammy AS jmx
+ARG JMX_EXPORTER_VERSION
+ADD https://github.com/prometheus/jmx_exporter/releases/download/${JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar /jmx_prometheus_javaagent.jar
+ADD https://raw.githubusercontent.com/prometheus/jmx_exporter/main/examples/kafka-connect.yml /kafka-connect.yml
+
+FROM cricketeerone/apache-kafka-connect:latest
+COPY --from=jmx /jmx_prometheus_javaagent.jar /opt/jmx/jmx_prometheus_javaagent.jar
+COPY --from=jmx /kafka-connect.yml /opt/jmx/kafka-connect.yml
+ENV JAVA_TOOL_OPTIONS="-javaagent:/opt/jmx/jmx_prometheus_javaagent.jar=9200:/opt/jmx/kafka-connect.yml"
+EXPOSE 9200
+```
+
+Point Prometheus at `connect-host:9200`. In Grafana, import Confluent's [Kafka Connect cluster dashboard](https://github.com/confluentinc/jmx-monitoring-stacks/blob/main/jmxexporter-prometheus-grafana/assets/grafana/provisioning/dashboards/kafka-connect-cluster.json) (JMX Exporter 1.x). Older exporter versions need the files under `dashboards-old-exporter/` in that repo.
 
 ## Extending with new Connectors
 
