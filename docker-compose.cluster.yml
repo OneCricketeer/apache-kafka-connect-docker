@@ -26,27 +26,26 @@ x-connect: &connect-vars
   CONNECT_CONSUMER_MAX_POLL_RECORDS: 500
 
 x-kraft: &kraft-vars
-  KAFKA_KRAFT_CLUSTER_ID: WNfE3WMTRRGBs35BikbfRg # Run 'kafka-storage random-uuid'
-  BITNAMI_DEBUG: yes
-  ALLOW_PLAINTEXT_LISTENER: yes
-  KAFKA_ENABLE_KRAFT: yes
-  KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-  KAFKA_CFG_DELETE_TOPIC_ENABLE: 'true'
-  KAFKA_CFG_LOG_RETENTION_HOURS: 48  # 2 days of retention for demo purposes
+  CLUSTER_ID: WNfE3WMTRRGBs35BikbfRg # Run 'kafka-storage random-uuid'
+  KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+  KAFKA_LOG_RETENTION_HOURS: 48  # 2 days of retention for demo purposes
 
 services:
   kafka-controller:
-    image: &kafka-image bitnami/kafka:4.3.1
+    image: &kafka-image apache/kafka:4.3.1
     restart: unless-stopped
     volumes:
-      - 'kafka_controller_data:/bitnami/kafka'
+      - 'kafka_controller_data:/tmp/kraft-combined-logs'
     environment:
       <<: *kraft-vars
-      KAFKA_CFG_PROCESS_ROLES: controller
-      KAFKA_CFG_NODE_ID: 1
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_CFG_LISTENERS: CONTROLLER://:9093
-      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: &kraft-quorum 1@kafka-controller:9093
+      KAFKA_PROCESS_ROLES: controller
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENERS: CONTROLLER://:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: &kraft-quorum 1@kafka-controller:9093
 
   kafka:
     image: *kafka-image
@@ -54,20 +53,20 @@ services:
     depends_on:
       - kafka-controller
     volumes:
-      - 'kafka_data:/bitnami/kafka'
+      - 'kafka_data:/tmp/kraft-combined-logs'
       - $PWD/lipsum.txt:/data/lipsum.txt:ro  # Some data to produce
     ports:
       - 9092:9092
     environment:
       <<: *kraft-vars
-      KAFKA_CFG_PROCESS_ROLES: broker
-      KAFKA_CFG_NODE_ID: 10  # cannot conflict with controllers
-      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: *kraft-quorum
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_PROCESS_ROLES: broker
+      KAFKA_NODE_ID: 10  # cannot conflict with controllers
+      KAFKA_CONTROLLER_QUORUM_VOTERS: *kraft-quorum
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       # https://rmoff.net/2018/08/02/kafka-listeners-explained/
-      KAFKA_CFG_LISTENERS: INTERNAL://:29092,EXTERNAL://0.0.0.0:9092
-      KAFKA_CFG_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://127.0.0.1:9092
+      KAFKA_LISTENERS: INTERNAL://:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://127.0.0.1:9092
 
   # Jib app
   connect-jib-1:
@@ -102,12 +101,12 @@ services:
     command: --api.insecure=true --providers.docker --providers.docker.exposedByDefault=false
     ports:
       # The HTTP port
-      - "80:80"
+      - "${TRAEFIK_HTTP_PORT:-80}:80"
       # The Web UI (enabled by --api.insecure=true)
-      - "8080:8080"
+      - "${TRAEFIK_DASHBOARD_PORT:-8080}:8080"
     volumes:
       # So that Traefik can listen to the Docker events
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock
 
 volumes:
   kafka_controller_data:

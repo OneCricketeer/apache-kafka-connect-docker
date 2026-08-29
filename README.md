@@ -98,7 +98,7 @@ $ DOCKER_REGISTRY=<registry-address> DOCKER_USER=$(whoami) \
 ## Tutorial
 
 The following tutorial uses Jib to package `ConnectDistributed` class for running Kafka Connect Distributed mode workers. 
-The following instructions use the [Bitnami](https://github.com/bitnami/bitnami-docker-kafka) Kafka images, however any other Kafka Docker images should work.
+The following instructions use the official [Apache Kafka](https://hub.docker.com/r/apache/kafka) image (`apache/kafka`), however any other Kafka Docker images should work.
 
 This tutorial will roughly follow the same steps as the [tutorial for Connect on Kafka's site](https://kafka.apache.org/documentation/#quickstart_kafkaconnect), 
 except using the Distributed Connect server instead.
@@ -153,14 +153,14 @@ We need to create the topics where data will be produced into.
 
 ```bash
 docker compose exec kafka \
-    bash -c "kafka-topics.sh --create --bootstrap-server kafka:29092 --topic input --partitions=1 --replication-factor=1"
+    /opt/kafka/bin/kafka-topics.sh --create --bootstrap-server kafka:29092 --topic input --partitions 1 --replication-factor 1
 ```
 
 Verify topics exist
 
 ```bash
 docker compose exec kafka \
-    bash -c "kafka-topics.sh --list --bootstrap-server kafka:29092"
+    /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server kafka:29092
 ```
 
 Should include `input` topic in the list.
@@ -169,14 +169,14 @@ Should include `input` topic in the list.
 
 ```bash
 docker compose exec kafka \
-    bash -c "cat /data/lipsum.txt | kafka-console-producer.sh --topic input --broker-list kafka:29092"
+    bash -c "cat /data/lipsum.txt | /opt/kafka/bin/kafka-console-producer.sh --topic input --bootstrap-server kafka:29092"
 ```
 
 Verify that data is there (note: hard-coding `max-messages` to the number of lines of expected text)
 
 ```bash
 docker compose exec kafka \
-    bash -c "kafka-console-consumer.sh --topic input --bootstrap-server kafka:29092 --from-beginning --max-messages=9"
+    /opt/kafka/bin/kafka-console-consumer.sh --topic input --bootstrap-server kafka:29092 --from-beginning --max-messages 9
 ```
 
 Should see last line `Processed a total of 9 messages`.
@@ -232,7 +232,7 @@ To repeat that process, we delete the connector and reset the consumer group.
 curl -XDELETE http://localhost:8083/connectors/console-sink
 
 docker compose exec kafka \
-    bash -c "kafka-consumer-groups.sh --bootstrap-server kafka:29092 --group connect-console-sink --reset-offsets --all-topics --to-earliest --execute"
+    /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka:29092 --group connect-console-sink --reset-offsets --all-topics --to-earliest --execute
 ```
 
 Re-run above console-producer and `curl -XPUT ...` command, but this time, there will be more than 9 total messages printed.
