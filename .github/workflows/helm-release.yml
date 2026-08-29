@@ -3,18 +3,18 @@ name: Release Helm Chart
 on:
   push:
     tags:
-      - 'helm/v**'
+      - 'helm/v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Validate SemVer and Set Chart Version
         run: |
@@ -39,7 +39,7 @@ jobs:
           grep -E "^version:" ./chart/Chart.yaml
 
       - name: Set up Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
 
       - name: Log in to GitHub Container Registry (GHCR)
         run: |
@@ -63,3 +63,22 @@ jobs:
               helm push "${pkg}" "oci://ghcr.io/${OWNER_LOWER}"
             fi
           done
+
+      - name: Generate Release Notes
+        run: |
+          PREV_TAG=$(git tag -l "helm/v*" --sort=-v:refname | grep -v "^${GITHUB_REF_NAME}$" | head -n 1)
+          if [ -n "${PREV_TAG}" ]; then
+            git log "${PREV_TAG}..HEAD" --pretty=format:"* %s (%h)" -- chart/ > RELEASE_NOTES.md
+          else
+            git log --pretty=format:"* %s (%h)" -- chart/ > RELEASE_NOTES.md
+          fi
+          if [ ! -s RELEASE_NOTES.md ]; then
+            echo "* Helm chart release ${GITHUB_REF_NAME}" > RELEASE_NOTES.md
+          fi
+
+      - name: Release Helm Chart to GitHub Releases
+        uses: softprops/action-gh-release@v3
+        with:
+          files: .cr-release-packages/*.tgz
+          body_path: RELEASE_NOTES.md
+
