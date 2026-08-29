@@ -1,0 +1,65 @@
+name: Release Helm Chart
+
+on:
+  push:
+    tags:
+      - 'helm/v**'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate SemVer and Set Chart Version
+        run: |
+          # Extract version from tag (e.g. helm/v1.2.3 -> 1.2.3)
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#helm/v}"
+
+          echo "Extracted version: ${VERSION} from tag: ${TAG}"
+
+          # SemVer 2.0.0 validation regex
+          SEMVER_REGEX="^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?(\+([0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*))?$"
+
+          if [[ ! "${VERSION}" =~ ${SEMVER_REGEX} ]]; then
+            echo "::error::Version '${VERSION}' is not a valid Semantic Version (SemVer)."
+            exit 1
+          fi
+
+          echo "Setting version in ./chart/Chart.yaml to ${VERSION}"
+          sed -i -E "s/^version:.*/version: ${VERSION}/" ./chart/Chart.yaml
+
+          # Display updated Chart.yaml for verification in workflow logs
+          grep -E "^version:" ./chart/Chart.yaml
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
+
+      - name: Lint Helm Chart
+        run: |
+          helm lint ./chart
+
+      - name: Package Helm Chart
+        run: |
+          mkdir -p .cr-release-packages
+          helm package ./chart --destination .cr-release-packages
+
+      - name: Publish Helm Chart to GHCR
+        run: |
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          for pkg in .cr-release-packages/*.tgz; do
+            if [ -f "${pkg}" ]; then
+              echo "Publishing ${pkg} to oci://ghcr.io/${OWNER_LOWER}..."
+              helm push "${pkg}" "oci://ghcr.io/${OWNER_LOWER}"
+            fi
+          done

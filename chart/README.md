@@ -14,17 +14,26 @@ A Helm chart for Apache Kafka Connect on Kubernetes
 
 ## Installing the Chart
 
-### Install with an existing Kafka cluster
+### Install from GHCR (OCI Registry)
+
+```sh
+helm install my-connect oci://ghcr.io/onecricketeer/kafka-connect --version <version> \
+  --set bootstrapServers="PLAINTEXT://external.kafka:9092",groupId="connect-group"
+```
+
+Or supply your own values file:
+
+```sh
+helm install my-connect oci://ghcr.io/onecricketeer/kafka-connect --version <version> \
+  --values /path/to/custom-values.yaml
+```
+
+### Install from Source
 
 ```sh
 git clone https://github.com/OneCricketeer/apache-kafka-connect-docker.git
-helm install --set bootstrapServers="PLAINTEXT://external.kafka:9092",groupId="connect-group" apache-kafka-connect-docker/chart
-```
-
-Or supply your own values file
-
-```sh
-helm install --values /path/to/custom-values.yaml
+helm install my-connect ./apache-kafka-connect-docker/chart \
+  --set bootstrapServers="PLAINTEXT://external.kafka:9092",groupId="connect-group"
 ```
 
 ## Values
