@@ -14,43 +14,46 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class ConnectDistributedWrapperTest implements WithAssertions {
+class EntrypointTest implements WithAssertions {
 
-    @SuppressWarnings({"unused", "ConstantConditions"})
+    @SuppressWarnings({"ConstantConditions"})
     @Test
     void connectEnvVarToProp_nullOrEmpty_throws() {
         final String ex = "Input cannot be null or empty";
         assertThatThrownBy(() -> {
-            String prop = ConnectDistributedWrapper.connectEnvVarToProp(null);
+            Entrypoint.connectEnvVarToProp(null);
         }).isInstanceOf(IllegalArgumentException.class).hasMessage(ex);
 
         assertThatThrownBy(() -> {
-            String prop = ConnectDistributedWrapper.connectEnvVarToProp("");
+            Entrypoint.connectEnvVarToProp("");
         }).isInstanceOf(IllegalArgumentException.class).hasMessage(ex);
     }
 
-    @SuppressWarnings("unused")
     @Test
     void connectEnvVarToProp_nonCONNECTShort_throws() {
-        final String ex = "Input does not start with '" + ConnectDistributedWrapper.CONNECT_ENV_PREFIX + "'";
+        final String ex = "Input does not start with '" + Entrypoint.CONNECT_ENV_PREFIX + "'";
         String input = "kafka";
         assertThatThrownBy(() -> {
-            String prop = ConnectDistributedWrapper.connectEnvVarToProp(input);
+            Entrypoint.connectEnvVarToProp(input);
         }).isInstanceOf(IllegalArgumentException.class).hasMessageStartingWith(ex);
 
-        String input2 = ConnectDistributedWrapper.CONNECT_ENV_PREFIX;
+        String input2 = Entrypoint.CONNECT_ENV_PREFIX;
         String ex2 = ex + " or does not define a property";
         assertThatThrownBy(() -> {
-            String prop = ConnectDistributedWrapper.connectEnvVarToProp(input2);
+            Entrypoint.connectEnvVarToProp(input2);
         }).isInstanceOf(IllegalArgumentException.class).hasMessage(ex2);
     }
 
     private String propToConnectEnv(String prop) {
-        return ConnectDistributedWrapper.CONNECT_ENV_PREFIX
+        return Entrypoint.CONNECT_ENV_PREFIX
                 .concat(prop
                         .replace('.', '_')
                         .toUpperCase()
@@ -61,7 +64,7 @@ class ConnectDistributedWrapperTest implements WithAssertions {
     @MethodSource("workerConfigProvider")
     void connectEnvVarToProp_connectConfigs(String prop) {
         String input = propToConnectEnv(prop);
-        assertThat(ConnectDistributedWrapper.connectEnvVarToProp(input))
+        assertThat(Entrypoint.connectEnvVarToProp(input))
                 .isEqualTo(prop);
     }
 
@@ -89,12 +92,12 @@ class ConnectDistributedWrapperTest implements WithAssertions {
         );
     }
 
-    @SuppressWarnings({"ConstantConditions", "unused"})
+    @SuppressWarnings({"ConstantConditions"})
     @Test
     void createConnectProperties_throws() {
         final String ex = "Provided argument cannot be null or empty";
         assertThatThrownBy(() -> {
-            final File propFile = ConnectDistributedWrapper.createConnectProperties(null);
+            Entrypoint.createConnectProperties(null);
         }).isInstanceOf(IllegalArgumentException.class).hasMessage(ex);
     }
 
@@ -113,7 +116,7 @@ class ConnectDistributedWrapperTest implements WithAssertions {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (prev, next) -> next, HashMap::new));
 
-        final File propFile = ConnectDistributedWrapper.createConnectProperties(propMap);
+        final File propFile = Entrypoint.createConnectProperties(propMap);
         assertThat(propFile.exists()).isTrue();
         final String fname = "connect-distributed";
         assertThat(propFile.getName())

@@ -8,16 +8,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Predicate;
 
 /**
  * Wrapper class for starting <code>connect-distributed</code> using <code>'CONNECT_'</code> properties from
  * {@link System#getenv()}
  **/
-public class ConnectDistributedWrapper implements Runnable {
+public class Entrypoint implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(ConnectDistributedWrapper.class);
+    private static final Logger log = LoggerFactory.getLogger(Entrypoint.class);
 
     /**
      * Environment variables for Kafka Connect properties start with 'CONNECT_',
@@ -26,14 +28,31 @@ public class ConnectDistributedWrapper implements Runnable {
     static final String CONNECT_ENV_PREFIX = "CONNECT_";
 
     /**
+     * Environment variable switch that allows the container to run under a different runtime mode.
+     */
+    static final String RUNTIME_MODE = "RUNTIME_MODE";
+
+    /**
      * Predicate for filtering environment variables.
      */
     private static final Predicate<Map.Entry<String, ?>> CONNECT_ENV_FILTER =
-            e -> e.getKey().startsWith(CONNECT_ENV_PREFIX);
+            new Predicate<Entry<String, ?>>() {
+
+        final int requiredLen = CONNECT_ENV_PREFIX.length();
+
+        @Override
+        public boolean test(Entry<String, ?> e) {
+            final String k = e.getKey();
+            if (k.length() <= requiredLen) {
+                return false;
+            }
+            return k.startsWith(CONNECT_ENV_PREFIX);
+        }
+    };
 
     public static void main(final String[] args) {
         log.debug("Starting Connect Wrapper");
-        final ConnectDistributedWrapper wrapper = new ConnectDistributedWrapper();
+        final Entrypoint wrapper = new Entrypoint();
         Runtime.getRuntime().addShutdownHook(new Thread(wrapper::stop));
         wrapper.run();
     }
@@ -61,27 +80,26 @@ public class ConnectDistributedWrapper implements Runnable {
 
     /**
      * Write all Environment variables starting with <code>'CONNECT_'</code> into a temporary property file to be
-     * used with {@link ConnectDistributed}.
+     * used with Kafka Connect.
      *
      * @param env A Map containing key-value pairs. Any key's starting with 'CONNECT_' will end up in the output file.
-     * @return A {@link File} instance to be used with {@link ConnectDistributed#main(String[])}
+     * @return A {@link File} instance to be used with Kafka Connect.
      * @throws IOException If the property file cannot be created.
      */
     static File createConnectProperties(Map<String, String> env) throws IOException {
         if (env == null || env.isEmpty()) {
             throw new IllegalArgumentException("Provided argument cannot be null or empty");
         }
-        final File workerPropFile = File.createTempFile("tmp-connect-distributed", ".properties");
+        final File workerPropFile = File.createTempFile("tmp-connect", ".properties");
         workerPropFile.deleteOnExit();
         try (PrintWriter pw = new PrintWriter(new FileOutputStream(workerPropFile))) {
             log.trace("Writing Connect worker properties '{}'", workerPropFile.getAbsolutePath());
             env.entrySet()
                     .stream()
                     .filter(CONNECT_ENV_FILTER)
-                    .map(e -> new AbstractMap.SimpleEntry<>(connectEnvVarToProp(e.getKey()), e.getValue()))
                     .forEach(e -> {
-                        final String k = e.getKey();
-                        final String v = e.getValue();
+                        final String k = connectEnvVarToProp(e.getKey());
+                        final String v = e.getValue();                        
                         log.debug("{}={}", k, v);
                         pw.printf("%s=%s%n", k, v);
                     });
@@ -93,10 +111,29 @@ public class ConnectDistributedWrapper implements Runnable {
 
     @Override
     public void run() {
+        Map<String, String> env = System.getenv();
+        String mode = env.getOrDefault("RUNTIME_MODE", "distribued");
+        if (!mode.matches("distributed|standalone")) {
+            String ex = "RUNTIME_MODE must match one of [distributed, standalone]";
+            log.error(ex);
+            throw new IllegalArgumentException(ex);
+        }
+        Class<?> clz = null;
         try {
-            ConnectDistributed.main(new String[]{createConnectProperties(System.getenv()).getAbsolutePath()});
+            final String[] args = new String[]{createConnectProperties(env).getAbsolutePath()};
+            if (mode.equals("standalone")) {
+                clz = ConnectStandalone.class;
+                ConnectStandalone.main(args);
+            } else {
+                clz = ConnectDistributed.class;
+                ConnectDistributed.main(args);
+            }
         } catch (Exception e) {
-            log.error("Error starting {}", ConnectDistributed.class.getSimpleName(), e);
+            if (clz != null) {
+                log.error("Error starting {}", clz.getSimpleName(), e);
+            } else {
+                log.error("Unable to execute entrypoint", e);
+            }
         }
     }
 
