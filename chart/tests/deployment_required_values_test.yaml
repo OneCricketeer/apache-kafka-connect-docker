@@ -1,0 +1,33 @@
+suite: deployment-required-values
+
+templates:
+  - deployment.yaml
+
+tests:
+  - it: should render deployment when required values are provided
+    set:
+      bootstrapServers: broker:9092
+      groupId: connect-group
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].env[1].value
+          value: broker:9092
+      - equal:
+          path: spec.template.spec.containers[0].env[2].value
+          value: connect-group
+
+  - it: should fail when bootstrapServers is missing
+    set:
+      groupId: connect-group
+    asserts:
+      - failedTemplate:
+          errorMessage: "The bootstrapServers cannot be empty."
+
+  - it: should fail when groupId is missing
+    set:
+      bootstrapServers: broker:9092
+    asserts:
+      - failedTemplate:
+          errorMessage: "The groupId cannot be empty."
