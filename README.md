@@ -267,7 +267,7 @@ It can be started via `docker compose -f docker-compose.cluster.yml up` and test
 
 This image does not ship a metrics collector. Kafka Connect and its internal clients expose JMX; scrape that with [Prometheus JMX Exporter](https://github.com/prometheus/jmx_exporter) (or OpenTelemetry) in a derived image.
 
-Download the Java agent JAR from the [jmx_exporter releases](https://github.com/prometheus/jmx_exporter/releases) and a Kafka Connect scrape config such as [`examples/kafka-connect.yml`](https://github.com/prometheus/jmx_exporter/blob/main/examples/kafka-connect.yml). The Eclipse Temurin base image already honors `JAVA_TOOL_OPTIONS`.
+Download the Java agent JAR from the [jmx_exporter releases](https://github.com/prometheus/jmx_exporter/releases) and a Kafka Connect scrape config such as [`examples/kafka-connect.yml`](https://github.com/prometheus/jmx_exporter/blob/main/examples/kafka-connect.yml). Debian tags use Eclipse Temurin and Alpine tags use Amazon Corretto; both honor `JAVA_TOOL_OPTIONS`.
 
 Example multi-stage image:
 
@@ -376,7 +376,7 @@ $ cat /tmp/connect.password  # add as many lines as needed
 admin: OneCricketeer
 ```
 
-Add environment variables and mounts (`JAVA_TOOL_OPTIONS` comes from Eclipse Temurin base image)
+Add environment variables and mounts (`JAVA_TOOL_OPTIONS` is read by Temurin and by Corretto on Alpine)
 
 ```yaml
     environment:
