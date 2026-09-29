@@ -8,6 +8,7 @@ import org.apache.kafka.connect.runtime.rest.RestServerConfig;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
@@ -18,39 +19,39 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class ConnectDistributedWrapperTest implements WithAssertions {
+class ConnectWrapperTest implements WithAssertions {
 
     @SuppressWarnings({"unused", "ConstantConditions"})
     @Test
     void connectEnvVarToProp_nullOrEmpty_throws() {
         final String ex = "Input cannot be null or empty";
         assertThatThrownBy(() -> {
-            String prop = ConnectDistributedWrapper.connectEnvVarToProp(null);
+            String prop = ConnectWrapper.connectEnvVarToProp(null);
         }).isInstanceOf(IllegalArgumentException.class).hasMessage(ex);
 
         assertThatThrownBy(() -> {
-            String prop = ConnectDistributedWrapper.connectEnvVarToProp("");
+            String prop = ConnectWrapper.connectEnvVarToProp("");
         }).isInstanceOf(IllegalArgumentException.class).hasMessage(ex);
     }
 
     @SuppressWarnings("unused")
     @Test
     void connectEnvVarToProp_nonCONNECTShort_throws() {
-        final String ex = "Input does not start with '" + ConnectDistributedWrapper.CONNECT_ENV_PREFIX + "'";
+        final String ex = "Input does not start with '" + ConnectWrapper.CONNECT_ENV_PREFIX + "'";
         String input = "kafka";
         assertThatThrownBy(() -> {
-            String prop = ConnectDistributedWrapper.connectEnvVarToProp(input);
+            String prop = ConnectWrapper.connectEnvVarToProp(input);
         }).isInstanceOf(IllegalArgumentException.class).hasMessageStartingWith(ex);
 
-        String input2 = ConnectDistributedWrapper.CONNECT_ENV_PREFIX;
+        String input2 = ConnectWrapper.CONNECT_ENV_PREFIX;
         String ex2 = ex + " or does not define a property";
         assertThatThrownBy(() -> {
-            String prop = ConnectDistributedWrapper.connectEnvVarToProp(input2);
+            String prop = ConnectWrapper.connectEnvVarToProp(input2);
         }).isInstanceOf(IllegalArgumentException.class).hasMessage(ex2);
     }
 
     private String propToConnectEnv(String prop) {
-        return ConnectDistributedWrapper.CONNECT_ENV_PREFIX
+        return ConnectWrapper.CONNECT_ENV_PREFIX
                 .concat(prop
                         .replace('.', '_')
                         .toUpperCase()
@@ -61,7 +62,7 @@ class ConnectDistributedWrapperTest implements WithAssertions {
     @MethodSource("workerConfigProvider")
     void connectEnvVarToProp_connectConfigs(String prop) {
         String input = propToConnectEnv(prop);
-        assertThat(ConnectDistributedWrapper.connectEnvVarToProp(input))
+        assertThat(ConnectWrapper.connectEnvVarToProp(input))
                 .isEqualTo(prop);
     }
 
@@ -94,15 +95,16 @@ class ConnectDistributedWrapperTest implements WithAssertions {
     void createConnectProperties_throws() {
         final String ex = "Provided argument cannot be null or empty";
         assertThatThrownBy(() -> {
-            final File propFile = ConnectDistributedWrapper.createConnectProperties(null);
+            final File propFile = ConnectWrapper.createConnectProperties(null, ConnectMode.DISTRIBUTED);
         }).isInstanceOf(IllegalArgumentException.class).hasMessage(ex);
     }
 
-    @Test
-    void createConnectProperties_createsFile() throws IOException, URISyntaxException {
+    @ParameterizedTest
+    @EnumSource(ConnectMode.class)
+    void createConnectProperties_createsFile(ConnectMode mode) throws IOException, URISyntaxException {
         Map<String, String> propMap = Stream.of(
                 new AbstractMap.SimpleImmutableEntry<>(
-                        DistributedConfig.BOOTSTRAP_SERVERS_CONFIG, DistributedConfig.BOOTSTRAP_SERVERS_DEFAULT),
+                        DistributedConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"),
                 new AbstractMap.SimpleImmutableEntry<>(
                         DistributedConfig.GROUP_ID_CONFIG, "junit"),
                 new AbstractMap.SimpleImmutableEntry<>(
@@ -113,9 +115,9 @@ class ConnectDistributedWrapperTest implements WithAssertions {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (prev, next) -> next, HashMap::new));
 
-        final File propFile = ConnectDistributedWrapper.createConnectProperties(propMap);
+        final File propFile = ConnectWrapper.createConnectProperties(propMap, mode);
         assertThat(propFile.exists()).isTrue();
-        final String fname = "connect-distributed";
+        final String fname = mode.propertiesFileNamePrefix();
         assertThat(propFile.getName())
                 .startsWith("tmp-" + fname)
                 .endsWith(".properties");
@@ -127,6 +129,21 @@ class ConnectDistributedWrapperTest implements WithAssertions {
         final Properties expectedProperties = Utils.loadProps(expectedPropertiesFile.getAbsolutePath());
 
         assertThat(properties).containsExactlyEntriesOf(expectedProperties);
+    }
+
+    @Test
+    void parseArgs_standaloneFlag_setsModeAndPassesThroughRemainingArgs() {
+        ConnectWrapper wrapper = ConnectWrapper.parseArgs(
+                new String[]{ConnectWrapper.STANDALONE_FLAG, "/app/resources/connector.properties"});
+        assertThat(wrapper.mode()).isEqualTo(ConnectMode.STANDALONE);
+        assertThat(wrapper.extraArgs()).containsExactly("/app/resources/connector.properties");
+    }
+
+    @Test
+    void parseArgs_noFlag_defaultsToDistributedMode() {
+        ConnectWrapper wrapper = ConnectWrapper.parseArgs(new String[]{});
+        assertThat(wrapper.mode()).isEqualTo(ConnectMode.DISTRIBUTED);
+        assertThat(wrapper.extraArgs()).isEmpty();
     }
 
 }

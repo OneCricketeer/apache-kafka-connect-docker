@@ -100,6 +100,10 @@ $ DOCKER_REGISTRY=<registry-address> DOCKER_USER=$(whoami) \
 The following tutorial uses Jib to package `ConnectDistributed` class for running Kafka Connect Distributed mode workers. 
 The following instructions use the official [Apache Kafka](https://hub.docker.com/r/apache/kafka) image (`apache/kafka`), however any other Kafka Docker images should work.
 
+> **Standalone mode**: pass `--standalone` as the container's CLI argument (e.g. `docker run ... image --standalone /app/resources/connector.properties`)
+> to run `ConnectStandalone` instead of `ConnectDistributed`. Any arguments after the flag are forwarded as connector config file paths.
+> Everything else below still applies, since the worker properties are still generated from `CONNECT_*` environment variables either way.
+
 This tutorial will roughly follow the same steps as the [tutorial for Connect on Kafka's site](https://kafka.apache.org/documentation/#quickstart_kafkaconnect), 
 except using the Distributed Connect server instead.
 
