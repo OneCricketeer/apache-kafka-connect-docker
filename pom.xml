@@ -26,7 +26,7 @@
         <assertj.version>3.27.7</assertj.version>
 
         <!-- Packaging -->
-        <mainClass>org.apache.kafka.connect.cli.ConnectDistributedWrapper</mainClass>
+        <mainClass>org.apache.kafka.connect.cli.ConnectWrapper</mainClass>
         <jib-maven-plugin.version>3.5.2</jib-maven-plugin.version>
         <baseDockerImage>eclipse-temurin:${maven.compiler.release}-jre</baseDockerImage>
         <jib.from.image>${baseDockerImage}</jib.from.image>
