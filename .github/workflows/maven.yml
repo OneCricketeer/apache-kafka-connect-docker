@@ -4,20 +4,67 @@
 name: Java CI with Maven
 
 on:
+  pull_request:
   push:
-    branches:
-      - master
-      - main
-      - 'v[0-9].[0-9].[0-9]'
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
+  build:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build - Alpine (no push)
+        run: make build-confluent-hub-alpine
+
+      - name: Build - Ubuntu (no push)
+        run: make build
+
   deploy:
-    if: github.repository == 'OneCricketeer/apache-kafka-connect-docker'
+    if: github.event_name == 'push' && github.repository == 'OneCricketeer/apache-kafka-connect-docker'
     runs-on: ubuntu-latest
     env:
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check tag is a valid SemVer and is on main
+        id: release_check
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+
+          SEMVER_REGEX="^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?(\+([0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*))?$"
+
+          if [[ ! "${VERSION}" =~ ${SEMVER_REGEX} ]]; then
+            echo "::error::Version '${VERSION}' is not a valid Semantic Version (SemVer)."
+            exit 1
+          fi
+
+          git fetch origin main --depth=1
+          TAG_COMMIT="$(git rev-list -n 1 "${TAG}")"
+
+          if ! git merge-base --is-ancestor "${TAG_COMMIT}" origin/main; then
+            echo "::error::Tag ${TAG} is not on main; refusing to release."
+            exit 1
+          fi
+
+          echo "Tag ${TAG} is a valid SemVer on main; proceeding with release."
 
       - name: Set up JDK
         uses: actions/setup-java@v5
