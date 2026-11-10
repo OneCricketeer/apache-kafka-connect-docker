@@ -30,7 +30,10 @@
         <jib-maven-plugin.version>3.5.2</jib-maven-plugin.version>
         <baseDockerImage>eclipse-temurin:${maven.compiler.release}-jre</baseDockerImage>
         <jib.from.image>${baseDockerImage}</jib.from.image>
-        <jib.to.image>cricketeerone/apache-kafka-connect</jib.to.image>
+        <!-- Image repository without tag; Makefile overrides from DOCKER_REGISTRY/DOCKER_USER/DOCKER_IMAGE -->
+        <docker.repository>cricketeerone/apache-kafka-connect</docker.repository>
+        <!-- Untagged, so Jib also pushes 'latest'; non-default profiles must set an explicit tag -->
+        <jib.to.image>${docker.repository}</jib.to.image>
         <!-- OCI revision label; Makefile passes the git commit SHA -->
         <git.revision>unknown</git.revision>
     </properties>
@@ -314,7 +317,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.6.4</version>
                     <configuration>
                         <mainClass>${mainClass}</mainClass>
                     </configuration>
@@ -322,17 +325,17 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.3</version>
+                    <version>3.6.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.4.2</version>
+                    <version>3.5.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
-                    <version>3.1.4</version>
+                    <version>3.2.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -397,9 +400,10 @@
             </build>
         </profile>
         <profile>
-            <id>alpine-temurin</id>
+            <id>alpine</id>
             <properties>
                 <jib.from.image>${baseDockerImage}-alpine</jib.from.image>
+                <jib.to.image>${docker.repository}:${project.version}-alpine</jib.to.image>
             </properties>
             <build>
                 <plugins>
@@ -410,7 +414,6 @@
                             <to>
                                 <tags>
                                     <tag>alpine</tag>
-                                    <tag>${project.version}-alpine</tag>
                                 </tags>
                             </to>
                         </configuration>
@@ -446,8 +449,8 @@
         <profile>
             <id>alpine-multi-arch</id>
             <properties>
-                <!-- FIX: Eclipse Temruin alpine images do not release arm64 -->
-                <jib.from.image>amazoncorretto:${maven.compiler.release}-alpine</jib.from.image>
+                <jib.from.image>${baseDockerImage}-alpine</jib.from.image>
+                <jib.to.image>${docker.repository}:${project.version}-alpine</jib.to.image>
             </properties>
             <build>
                 <plugins>
@@ -470,7 +473,6 @@
                             <to>
                                 <tags>
                                     <tag>alpine</tag>
-                                    <tag>${project.version}-alpine</tag>
                                 </tags>
                             </to>
                         </configuration>

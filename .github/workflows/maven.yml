@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
+      GIT_REVISION: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v7
 
@@ -43,6 +44,5 @@ jobs:
       - name: Build & Push - Alpine
         run: make buildx-confluent-hub-alpine
 
-      # overrides 'latest' tag created in previous step
-      - name: Build & Push - Ubuntu (override latest)
+      - name: Build & Push - Ubuntu
         run: make

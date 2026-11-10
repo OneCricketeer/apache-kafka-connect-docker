@@ -1,16 +1,30 @@
-FROM cricketeerone/apache-kafka-connect:latest
+# syntax=docker/dockerfile:1
+ARG BASE_IMAGE=cricketeerone/apache-kafka-connect
+FROM ${BASE_IMAGE}:latest
 
-# Get curl
-RUN apt-get -y update && apt-get install -y \
+ARG BASE_IMAGE
+ARG GIT_REVISION=unknown
+# Version, licenses, and URLs are inherited from the base image labels
+LABEL org.opencontainers.image.revision="${GIT_REVISION}" \
+      org.opencontainers.image.title="apache-kafka-connect-confluent-hub" \
+      org.opencontainers.image.description="Apache Kafka Connect Distributed Server with the Confluent Hub CLI" \
+      org.opencontainers.image.source="https://github.com/OneCricketeer/apache-kafka-connect-docker" \
+      org.opencontainers.image.base.name="${BASE_IMAGE}:latest"
+
+# Get curl; per-arch caches so multi-platform builds don't serialize on the lock
+ARG TARGETARCH
+RUN --mount=type=cache,id=apt-cache-${TARGETARCH},target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=apt-lib-${TARGETARCH},target=/var/lib/apt,sharing=locked \
+    apt-get -y update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
+    unzip
 
 # Install Confluent Hub CLI
 RUN mkdir -p /opt/confluent-hub-client \
-    && curl -vv -kL "https://client.hub.confluent.io/confluent-hub-client-latest.tar.gz" \
-    | tar -xzv -C /opt/confluent-hub-client
+    && curl -fsSL -o /tmp/confluent-hub-client.tar.gz "https://client.hub.confluent.io/confluent-hub-client-latest.tar.gz" \
+    && tar -xzf /tmp/confluent-hub-client.tar.gz -C /opt/confluent-hub-client \
+    && rm /tmp/confluent-hub-client.tar.gz
 ENV PATH="/opt/confluent-hub-client/bin:${PATH}"
 
 # Example connector installation
