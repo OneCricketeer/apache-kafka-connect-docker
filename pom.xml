@@ -5,7 +5,7 @@
 
     <groupId>cricket.jmoore</groupId>
     <artifactId>kafka-connect-docker</artifactId>
-    <version>4.3.1</version>
+    <version>4.3.2</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -14,15 +14,15 @@
         <maven.compiler.release>25</maven.compiler.release>
 
         <kafka.version>${project.version}</kafka.version>
-        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/4.3.1/gradle/dependencies.gradle -->
-        <jackson.version>2.21.2</jackson.version>
-        <jetty.version>12.0.34</jetty.version>
+        <!-- Kafka Dependencies : https://github.com/apache/kafka/blob/4.3.2/gradle/dependencies.gradle -->
+        <jackson.version>2.21.7</jackson.version>
+        <jetty.version>12.0.37</jetty.version>
         <jersey.version>3.1.10</jersey.version>
         <slf4j.version>1.7.36</slf4j.version>
         <log4j2.version>2.26.1</log4j2.version>
 
         <!-- Tests -->
-        <junit.version>6.1.2</junit.version>
+        <junit.version>6.1.3</junit.version>
         <assertj.version>3.27.7</assertj.version>
 
         <!-- Packaging -->
@@ -31,6 +31,8 @@
         <baseDockerImage>eclipse-temurin:${maven.compiler.release}-jre</baseDockerImage>
         <jib.from.image>${baseDockerImage}</jib.from.image>
         <jib.to.image>cricketeerone/apache-kafka-connect</jib.to.image>
+        <!-- OCI revision label; Makefile passes the git commit SHA -->
+        <git.revision>unknown</git.revision>
     </properties>
 
     <dependencyManagement>
@@ -256,7 +258,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.3.1</version>
+                    <version>3.5.0</version>
                 </plugin>
 
                 <plugin>
@@ -273,7 +275,7 @@
                         <container>
                             <mainClass>${mainClass}</mainClass>
                             <jvmFlags>
-                                <!-- https://github.com/apache/kafka/blob/4.3.1/bin/kafka-run-class.sh#L282 -->
+                                <!-- https://github.com/apache/kafka/blob/4.3.2/bin/kafka-run-class.sh#L282 -->
                                 <jvmFlag>-server</jvmFlag>
                                 <jvmFlag>-XX:+UseG1GC</jvmFlag>
                                 <jvmFlag>-XX:MaxGCPauseMillis=20</jvmFlag>
@@ -284,6 +286,18 @@
                                 <jvmFlag>-Djava.awt.headless=true</jvmFlag>
                             </jvmFlags>
                             <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                            <!-- https://github.com/opencontainers/image-spec/blob/main/annotations.md -->
+                            <labels>
+                                <org.opencontainers.image.title>apache-kafka-connect</org.opencontainers.image.title>
+                                <org.opencontainers.image.description>Apache Kafka Connect Distributed Server, packaged with Jib</org.opencontainers.image.description>
+                                <org.opencontainers.image.version>${project.version}</org.opencontainers.image.version>
+                                <org.opencontainers.image.licenses>Apache-2.0</org.opencontainers.image.licenses>
+                                <org.opencontainers.image.url>https://hub.docker.com/r/cricketeerone/apache-kafka-connect</org.opencontainers.image.url>
+                                <org.opencontainers.image.source>https://github.com/OneCricketeer/apache-kafka-connect-docker</org.opencontainers.image.source>
+                                <org.opencontainers.image.documentation>https://github.com/OneCricketeer/apache-kafka-connect-docker#readme</org.opencontainers.image.documentation>
+                                <org.opencontainers.image.base.name>${jib.from.image}</org.opencontainers.image.base.name>
+                                <org.opencontainers.image.revision>${git.revision}</org.opencontainers.image.revision>
+                            </labels>
                         </container>
                     </configuration>
                     <executions>
