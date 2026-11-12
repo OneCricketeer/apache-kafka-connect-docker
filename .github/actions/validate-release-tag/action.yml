@@ -1,0 +1,48 @@
+name: Validate release tag
+description: Fails unless the pushed ref is a SemVer tag whose commit is reachable from main
+
+inputs:
+  prefix:
+    description: Tag prefix stripped before SemVer validation (e.g. 'v' or 'helm/v')
+    required: true
+
+outputs:
+  version:
+    description: The tag with its prefix removed
+    value: ${{ steps.validate.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - id: validate
+      shell: bash
+      env:
+        PREFIX: ${{ inputs.prefix }}
+      run: |
+        if [[ "${GITHUB_REF_TYPE}" != "tag" ]]; then
+          echo "::error::Releases only run for tag pushes; got ${GITHUB_REF_TYPE} '${GITHUB_REF_NAME}'."
+          exit 1
+        fi
+
+        TAG="${GITHUB_REF_NAME}"
+        if [[ "${TAG}" != "${PREFIX}"* ]]; then
+          echo "::error::Tag '${TAG}' does not start with '${PREFIX}'."
+          exit 1
+        fi
+        VERSION="${TAG#"${PREFIX}"}"
+
+        SEMVER_REGEX="^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?(\+([0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*))?$"
+        if [[ ! "${VERSION}" =~ ${SEMVER_REGEX} ]]; then
+          echo "::error::Version '${VERSION}' from tag '${TAG}' is not a valid Semantic Version (SemVer)."
+          exit 1
+        fi
+
+        # Requires a full-history checkout (fetch-depth: 0)
+        git fetch --no-tags origin main
+        if ! git merge-base --is-ancestor "${GITHUB_SHA}" origin/main; then
+          echo "::error::Tag '${TAG}' (${GITHUB_SHA}) is not on main; refusing to release."
+          exit 1
+        fi
+
+        echo "Tag ${TAG} is on main; releasing version ${VERSION}."
+        echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
