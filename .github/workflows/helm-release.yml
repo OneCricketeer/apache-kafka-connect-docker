@@ -53,7 +53,7 @@ jobs:
       - name: Install Helm unittest plugin
         run: |
           if ! helm plugin list | grep -q "unittest"; then
-            helm plugin install https://github.com/helm-unittest/helm-unittest
+            helm plugin install https://github.com/helm-unittest/helm-unittest --verify=false
           fi
 
       - name: Run Helm unit tests
