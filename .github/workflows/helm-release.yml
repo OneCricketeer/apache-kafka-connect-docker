@@ -1,16 +1,13 @@
 name: Release Helm Chart
 
 on:
-  pull_request:
   push:
-    branches:
-      - '**'
     tags:
       - 'helm/v*'
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
       packages: write
@@ -21,27 +18,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check if tag is on main
-        id: release_check
-        shell: bash
-        run: |
-          if [[ "${GITHUB_REF_TYPE}" != "tag" ]]; then
-            echo "release_allowed=false" >> "$GITHUB_OUTPUT"
-            echo "Not a tag push; lint only."
-            exit 0
-          fi
-
-          TAG="${GITHUB_REF_NAME}"
-          git fetch origin main --depth=1
-          TAG_COMMIT="$(git rev-list -n 1 "${TAG}")"
-
-          if git merge-base --is-ancestor "${TAG_COMMIT}" origin/main; then
-            echo "release_allowed=true" >> "$GITHUB_OUTPUT"
-            echo "Tag ${TAG} is on main; releasing chart."
-          else
-            echo "release_allowed=false" >> "$GITHUB_OUTPUT"
-            echo "Tag ${TAG} is not on main; lint only."
-          fi
+      - name: Validate tag
+        id: tag
+        uses: ./.github/actions/validate-release-tag
+        with:
+          prefix: helm/v
 
       - name: Set up Helm
         uses: azure/setup-helm@v5
@@ -53,45 +34,45 @@ jobs:
       - name: Install Helm unittest plugin
         run: |
           if ! helm plugin list | grep -q "unittest"; then
-            helm plugin install https://github.com/helm-unittest/helm-unittest
+            helm plugin install https://github.com/helm-unittest/helm-unittest --verify=false
           fi
 
       - name: Run Helm unit tests
         run: |
           helm unittest ./chart
 
-      - name: Validate SemVer and Set Chart Version
-        if: steps.release_check.outputs.release_allowed == 'true'
+      - name: Trivy scan - Helm Chart
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        env:
+          # Required chart values, so Trivy can render the templates
+          TRIVY_HELM_SET: bootstrapServers=kafka:9092,groupId=connect
+        with:
+          scan-type: config
+          scan-ref: ./chart
+          severity: CRITICAL
+          exit-code: '1'
+          version: v0.76.2
+
+      - name: Set Chart Version
+        env:
+          VERSION: ${{ steps.tag.outputs.version }}
         run: |
-          TAG="${GITHUB_REF_NAME}"
-          VERSION="${TAG#helm/v}"
-
-          echo "Extracted version: ${VERSION} from tag: ${TAG}"
-
-          SEMVER_REGEX="^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?(\+([0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*))?$"
-
-          if [[ ! "${VERSION}" =~ ${SEMVER_REGEX} ]]; then
-            echo "::error::Version '${VERSION}' is not a valid Semantic Version (SemVer)."
-            exit 1
-          fi
-
           echo "Setting version in ./chart/Chart.yaml to ${VERSION}"
           sed -i -E "s/^version:.*/version: ${VERSION}/" ./chart/Chart.yaml
           grep -E "^version:" ./chart/Chart.yaml
 
       - name: Log in to GitHub Container Registry (GHCR)
-        if: steps.release_check.outputs.release_allowed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
+          echo "${GITHUB_TOKEN}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
 
       - name: Package Helm Chart
-        if: steps.release_check.outputs.release_allowed == 'true'
         run: |
           mkdir -p .cr-release-packages
           helm package ./chart --destination .cr-release-packages
 
       - name: Publish Helm Chart to GHCR
-        if: steps.release_check.outputs.release_allowed == 'true'
         run: |
           OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           for pkg in .cr-release-packages/*.tgz; do
@@ -102,7 +83,6 @@ jobs:
           done
 
       - name: Generate Release Notes
-        if: steps.release_check.outputs.release_allowed == 'true'
         run: |
           PREV_TAG=$(git tag -l "helm/v*" --sort=-v:refname | grep -v "^${GITHUB_REF_NAME}$" | head -n 1)
           if [ -n "${PREV_TAG}" ]; then
@@ -115,9 +95,7 @@ jobs:
           fi
 
       - name: Release Helm Chart to GitHub Releases
-        if: steps.release_check.outputs.release_allowed == 'true'
         uses: softprops/action-gh-release@v3
         with:
           files: .cr-release-packages/*.tgz
           body_path: RELEASE_NOTES.md
-

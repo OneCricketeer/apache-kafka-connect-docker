@@ -102,7 +102,7 @@ class ConnectDistributedWrapperTest implements WithAssertions {
     void createConnectProperties_createsFile() throws IOException, URISyntaxException {
         Map<String, String> propMap = Stream.of(
                 new AbstractMap.SimpleImmutableEntry<>(
-                        DistributedConfig.BOOTSTRAP_SERVERS_CONFIG, DistributedConfig.BOOTSTRAP_SERVERS_DEFAULT),
+                        DistributedConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"),
                 new AbstractMap.SimpleImmutableEntry<>(
                         DistributedConfig.GROUP_ID_CONFIG, "junit"),
                 new AbstractMap.SimpleImmutableEntry<>(

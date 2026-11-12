@@ -1,8 +1,8 @@
 # Containerized [Apache Kafka Connect](http://kafka.apache.org/documentation/#connect)
 
 <!-- Note: Version is listed in URL -->
-[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/4.3.1?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
-[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/4.3.1?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/cricketeerone/apache-kafka-connect/4.3.2?logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
+[![Docker Image Size (latest semver)](https://img.shields.io/docker/image-size/cricketeerone/apache-kafka-connect/4.3.2?logo=docker&label=size&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect/tags)
 [![Docker Pulls](https://img.shields.io/docker/pulls/cricketeerone/apache-kafka-connect?label=pulls&logo=docker&style=flat-square)](https://hub.docker.com/r/cricketeerone/apache-kafka-connect)
 
 [![LICENSE](https://img.shields.io/github/license/OneCricketeer/apache-kafka-connect-docker?color=%23ce353d&logo=apache&style=flat-square)](https://github.com/OneCricketeer/apache-kafka-connect-docker/blob/master/LICENSE)
@@ -38,6 +38,7 @@ Alpine variants are also available. Check [Docker Hub](https://hub.docker.com/r/
 **Table of Contents**
 - [Image Details](#image-details)
 - [Build it locally](#build-it-locally)
+  - [Image build matrix](#image-build-matrix)
 - [Tutorial](#tutorial)
   - [Without Docker](#without-docker)
   - [Starting Kafka in Docker](#start-kafka-cluster-in-docker)
@@ -81,12 +82,79 @@ The following builds and pushes multi-platform images to your personal Docker Hu
 BUILDX_PLATFORMS=linux/arm64,linux/amd64 DOCKER_USER=$(whoami) make
 ```
 
-As of May 2023, Alpine variants of Eclipse Temurin Java 17 images do not support `arm64`.
+For multi-platform Alpine variants (Eclipse Temurin JRE base), use the `buildx-confluent-hub-alpine` target.
+
+```sh
+BUILDX_PLATFORMS=linux/arm64,linux/amd64 DOCKER_USER=$(whoami) make buildx-confluent-hub-alpine
+```
+
+### Image build matrix
+
+Which `make` targets and Maven profiles produce which images, in the GitHub Actions workflow ([`maven.yml`](.github/workflows/maven.yml)) and locally.
+
+| Maven profiles | Base image | Platforms | Tags |
+|---|---|---|---|
+| _(none; `ubuntu` is active by default)_ | `eclipse-temurin:25-jre` | `linux/amd64` (Jib default) | `latest`, `VERSION` |
+| `-Pubuntu,ubuntu-multi-arch` | `eclipse-temurin:25-jre` | `linux/amd64`, `linux/arm64` | `latest`, `VERSION` |
+| `-Palpine` | `eclipse-temurin:25-jre-alpine` | `linux/amd64` (Jib default) | `alpine`, `VERSION-alpine` |
+| `-Palpine-multi-arch` | `eclipse-temurin:25-jre-alpine` | `linux/amd64`, `linux/arm64` | `alpine`, `VERSION-alpine` |
+
+Local builds are shown in amber, workflow builds in blue.
+
+```mermaid
+flowchart LR
+    L_U["Local<br/>make"]
+    W_U["Workflow<br/>make"]
+    L_A["Local<br/>make build-confluent-hub-alpine"]
+    W_A["Workflow<br/>make buildx-confluent-hub-alpine"]
+
+    subgraph MVN["Maven profiles (Jib)"]
+        P_DEF["ubuntu<br/>(activeByDefault)"]
+        P_UMA["-Pubuntu,ubuntu-multi-arch"]
+        P_ALP["-Palpine"]
+        P_AMA["-Palpine-multi-arch"]
+    end
+
+    L_U --> P_DEF
+    W_U --> P_UMA
+    L_A --> P_ALP
+    W_A --> P_AMA
+
+    IMG_U[["apache-kafka-connect<br/>:latest, :VERSION"]]
+    IMG_A[["apache-kafka-connect<br/>:alpine, :VERSION-alpine"]]
+
+    P_DEF --> IMG_U
+    P_UMA --> IMG_U
+    P_ALP --> IMG_A
+    P_AMA --> IMG_A
+
+    CH[["apache-kafka-connect<br/>:latest-confluent-hub<br/>:VERSION-confluent-hub"]]
+    CHA[["apache-kafka-connect<br/>:alpine-confluent-hub<br/>:VERSION-alpine-confluent-hub"]]
+
+    IMG_U -->|"Dockerfile.confluent-hub"| CH
+    IMG_A -->|"Dockerfile.confluent-hub-alpine"| CHA
+
+    classDef local fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef ci fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef img fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class L_U,L_A,P_DEF,P_ALP local
+    class W_U,W_A,P_UMA,P_AMA ci
+    class IMG_U,IMG_A,CH,CHA img
+```
+
+**How the multi-arch builds work**
+
+The workflow sets `BUILDX_PLATFORMS=linux/amd64,linux/arm64`. Because that value contains `arm64`, the Makefile switches to its `buildx-*` targets, and plain `make` runs `buildx-confluent-hub` instead of `build-confluent-hub`.
+
+1. Maven runs with a `*-multi-arch` profile. Jib pulls the `linux/amd64` and `linux/arm64` variants of the Eclipse Temurin base image and pushes both platforms under a single multi-platform tag (`jib:build`).
+2. `docker buildx build --platform linux/amd64,linux/arm64 --push` then builds the `confluent-hub` image for each platform. Its `FROM` line pulls the base image that Jib just pushed, so the `confluent-hub` tags are multi-platform as well.
+
+Locally, with the default `BUILDX_PLATFORMS=linux/amd64`, Jib builds a single `linux/amd64` image. With the default `MVN_BUILD_CMD` (`compile jib:build`), Jib pushes that base image to the registry. `docker build` then creates the `confluent-hub` image in your local Docker daemon only; use `make push` / `make push-alpine` to push it.
 
 ## Push to a private registry
 
-To push to a private Docker Registry, you'll need to `docker login` to that address. The following commands will push the `apache-kafka-connect` image to a Docker Registry under your local username.
-Feel free to change `DOCKER_USER` to a custom repo name in the Registry.
+To push to a private Docker Registry, you'll need to `docker login` to that address. The following commands will push the `apache-kafka-connect` image to a Docker Registry under your local username.  
+Feel free to change `DOCKER_USER` to a custom repo name in the Registry. The same `DOCKER_REGISTRY`/`DOCKER_USER` apply to both the Jib-built images and the `confluent-hub` images built on top of them.
 
 ```sh
 $ docker login <registry-address> --username=$(whoami)
@@ -298,27 +366,27 @@ $ curl localhost:8083/connector-plugins | jq
     {
         "class": "org.apache.kafka.connect.file.FileStreamSinkConnector",
         "type": "sink",
-        "version": "4.3.1"
+        "version": "4.3.2"
     },
     {
         "class": "org.apache.kafka.connect.file.FileStreamSourceConnector",
         "type": "source",
-        "version": "4.3.1"
+        "version": "4.3.2"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorCheckpointConnector",
         "type": "source",
-        "version": "4.3.1"
+        "version": "4.3.2"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorHeartbeatConnector",
         "type": "source",
-        "version": "4.3.1"
+        "version": "4.3.2"
     },
     {
         "class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
         "type": "source",
-        "version": "4.3.1"
+        "version": "4.3.2"
     }
 ]
 ```
@@ -370,7 +438,7 @@ Add environment variables and mounts (`JAVA_TOOL_OPTIONS` comes from Eclipse Tem
 $ curl -w'\n' http://localhost:8083
 User cannot access the resource.
 $ curl -w'\n' -uadmin:OneCricketeer http://localhost:8083
-{"version":"4.3.1","commit":"60e845626d8a465a","kafka_cluster_id":"nA5eYC5WSrSHjaKgw1BpHg"}
+{"version":"4.3.2","commit":"60e845626d8a465a","kafka_cluster_id":"nA5eYC5WSrSHjaKgw1BpHg"}
 ```
 
 ## Maven Details
