@@ -51,6 +51,7 @@ jobs:
           scan-ref: ./chart
           severity: CRITICAL
           exit-code: '1'
+          version: v0.76.2
 
       - name: Set Chart Version
         env:

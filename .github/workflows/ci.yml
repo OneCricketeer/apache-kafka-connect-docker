@@ -1,5 +1,8 @@
 # Lints and tests only; nothing is pushed or released from this workflow.
 # Releases are handled by docker-release.yml and helm-release.yml on SemVer tags from main.
+#
+# Repeated values are YAML anchors (&name), defined at first use and reused as aliases (*name).
+# Merge keys (<<) are not supported by GitHub Actions, so only whole values and steps are shared.
 
 name: CI
 
@@ -18,11 +21,13 @@ concurrency:
 
 jobs:
   maven:
-    runs-on: ubuntu-26.04
+    runs-on: &runner ubuntu-26.04
     steps:
-      - uses: actions/checkout@v7
+      - &checkout
+        uses: actions/checkout@v7
 
-      - name: Set up JDK
+      - &setup-jdk
+        name: Set up JDK
         uses: actions/setup-java@v5
         with:
           java-version: '25'
@@ -42,7 +47,7 @@ jobs:
       matrix:
         include:
           - arch: amd64
-            runner: ubuntu-26.04
+            runner: *runner
           - arch: arm64
             runner: ubuntu-26.04-arm
     env:
@@ -53,14 +58,9 @@ jobs:
       MVN_BUILD_CMD: compile jib:dockerBuild
       GIT_REVISION: ${{ github.sha }}
     steps:
-      - uses: actions/checkout@v7
+      - *checkout
 
-      - name: Set up JDK
-        uses: actions/setup-java@v5
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-          cache: maven
+      - *setup-jdk
 
       # 'docker' driver so buildx reads the Jib base images from, and loads results into, the local daemon
       - name: Set up Docker Buildx
@@ -88,45 +88,47 @@ jobs:
 
       # Report HIGH and above, but only fail on fixable CRITICAL vulnerabilities
       - name: Trivy report - Alpine
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        uses: &trivy-action aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: cricketeerone/apache-kafka-connect:alpine-confluent-hub
-          severity: HIGH,CRITICAL
+          image-ref: &alpine-image cricketeerone/apache-kafka-connect:alpine-confluent-hub
+          severity: &report-severity HIGH,CRITICAL
           ignore-unfixed: true
+          # Installs Trivy for the later steps, which skip setup
+          version: &trivy-version v0.76.2
 
       - name: Trivy report - Ubuntu
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        uses: *trivy-action
         with:
-          image-ref: cricketeerone/apache-kafka-connect:latest-confluent-hub
-          severity: HIGH,CRITICAL
+          image-ref: &ubuntu-image cricketeerone/apache-kafka-connect:latest-confluent-hub
+          severity: *report-severity
           ignore-unfixed: true
           skip-setup-trivy: true
 
       - name: Trivy gate - Alpine
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        uses: *trivy-action
         with:
-          image-ref: cricketeerone/apache-kafka-connect:alpine-confluent-hub
-          severity: CRITICAL
+          image-ref: *alpine-image
+          severity: &gate-severity CRITICAL
           ignore-unfixed: true
           exit-code: '1'
           skip-setup-trivy: true
 
       - name: Trivy gate - Ubuntu
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        uses: *trivy-action
         with:
-          image-ref: cricketeerone/apache-kafka-connect:latest-confluent-hub
-          severity: CRITICAL
+          image-ref: *ubuntu-image
+          severity: *gate-severity
           ignore-unfixed: true
           exit-code: '1'
           skip-setup-trivy: true
 
   helm:
-    runs-on: ubuntu-26.04
+    runs-on: *runner
     env:
       # Required chart values, so Trivy can render the templates
       TRIVY_HELM_SET: bootstrapServers=kafka:9092,groupId=connect
     steps:
-      - uses: actions/checkout@v7
+      - *checkout
 
       - name: Set up Helm
         uses: azure/setup-helm@v5
@@ -145,17 +147,18 @@ jobs:
 
       # Report HIGH and above, but only fail on CRITICAL misconfigurations
       - name: Trivy report - Helm Chart
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        uses: *trivy-action
         with:
           scan-type: config
           scan-ref: ./chart
-          severity: HIGH,CRITICAL
+          severity: *report-severity
+          version: *trivy-version
 
       - name: Trivy gate - Helm Chart
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        uses: *trivy-action
         with:
           scan-type: config
           scan-ref: ./chart
-          severity: CRITICAL
+          severity: *gate-severity
           exit-code: '1'
           skip-setup-trivy: true
